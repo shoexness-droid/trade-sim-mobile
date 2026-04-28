@@ -68,11 +68,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
   #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
   #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 12px 16px; border-radius: 20px; display: none; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 340px; }
-  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
+  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
   .fab-btn { background: transparent; border: none; color: var(--text); font-size: 20px; padding: 4px; cursor: pointer; }
   .fab-btn-small { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); font-size: 11px; padding: 6px 12px; border-radius: 14px; cursor: pointer; display: none; }
   
-  /* ボトムナビ: Indiを追加 */
   .bottom-nav { height: var(--nav-height); background: var(--bg-panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
   .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px; gap: 4px; background: transparent; border: none; }
   .nav-item.active { color: var(--accent); }
@@ -83,8 +82,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
   
   .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 120; padding: 16px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
   .bottom-sheet.open { transform: translateY(0); }
+  
+  /* ★ ボトムシートのヘッダー・閉じるボタン */
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
-  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color:var(--text); flex-shrink: 0; }
+  .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+  .sheet-title { font-size: 16px; font-weight: 700; margin: 0; color:var(--text); }
+  .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+  .sheet-close-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
   
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; color: var(--text); }
@@ -122,7 +126,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     .tool-lbl { font-size: 8px; margin-top: 2px; }
     .palette { padding: 6px; }
     .bottom-sheet { padding: 12px; max-height: 100dvh; border-radius: 0; gap: 10px; }
-    .sheet-title { font-size: 14px; margin-bottom: 5px; }
+    .sheet-header { margin-bottom: 4px; }
     #fab-controls { bottom: 5px; padding: 4px 16px; }
     .fab-btn { font-size: 16px; }
     .info-bar { flex-direction: row; gap: 15px; }
@@ -223,14 +227,19 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
 
     <div id="fab-controls">
-      </div>
+      <!-- Controller contents injected via JS -->
+    </div>
   </main>
 
   <div class="backdrop" id="backdrop" onclick="closeAllSheets()"></div>
 
+  <!-- Tools Sheet -->
   <div class="bottom-sheet" id="sheet-tools">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">✏️ 描画ツール</div>
+    <div class="sheet-header">
+      <div class="sheet-title">✏️ 描画ツール</div>
+      <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
+    </div>
     <div class="tool-grid">
       <div class="tool-btn active" data-tool="cursor"><div>👆</div><span class="tool-lbl">選択</span></div>
       <div class="tool-btn" data-tool="trendline"><div>／</div><span class="tool-lbl">ﾄﾚﾝﾄﾞ</span></div>
@@ -254,9 +263,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
   </div>
 
+  <!-- Scenario Sheet -->
   <div class="bottom-sheet" id="sheet-scenario">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">🎯 シナリオ構築</div>
+    <div class="sheet-header">
+      <div class="sheet-title">🎯 シナリオ構築</div>
+      <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
+    </div>
     <div id="sc-cards-container"></div>
     <div style="display:flex; flex-direction:column; gap:10px;">
       <button class="btn btn-long" onclick="startScenarioBuilder('long')">📈 ロングシナリオ作成</button>
@@ -266,9 +279,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
   </div>
 
+  <!-- Indi Sheet -->
   <div class="bottom-sheet" id="sheet-indi">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">📈 インジケーター</div>
+    <div class="sheet-header">
+      <div class="sheet-title">📈 インジケーター</div>
+      <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
+    </div>
     
     <div class="indi-row">
       <span style="font-size:14px; font-weight:bold;">📊 ティックボリューム</span>
@@ -294,9 +311,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
   </div>
 
+  <!-- Settings Sheet -->
   <div class="bottom-sheet" id="sheet-menu">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">⚙️ 設定</div>
+    <div class="sheet-header">
+      <div class="sheet-title">⚙️ 設定</div>
+      <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
+    </div>
     <label style="font-size:12px; color:var(--text-muted);">デフォルトエントリー方式</label>
     <select id="cfg-default-mode" class="input-field" style="margin-bottom:12px;">
       <option value="pa">👀 PA確認 (到達時に手動判断)</option>
@@ -473,7 +494,7 @@ function initChartSystem() {
     grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
-    timeScale: { borderColor: 'rgba(255,255,255,0.1)', timeVisible: true },
+    timeScale: { borderColor: 'rgba(255,255,255,0.1)', timeVisible: true, rightOffset: 20 },
     handleScroll: { pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
     handleScale: { axisPressedMouseMove: true, pinch: true }
   });
@@ -571,7 +592,8 @@ function toggleVolume() {
   btn.style.color = isVolumeVisible ? 'var(--accent)' : 'var(--text)';
   btn.style.borderColor = isVolumeVisible ? 'var(--accent)' : 'var(--border)';
   if (isVolumeVisible) {
-    volumeSeries = chart.addHistogramSeries({ color: 'rgba(96,165,250,0.35)', priceFormat: { type: 'volume' }, priceScaleId: 'volume', scaleMargins: { top: 0.8, bottom: 0 } });
+    volumeSeries = chart.addHistogramSeries({ color: 'rgba(96,165,250,0.35)', priceFormat: { type: 'volume' }, priceScaleId: 'volume' });
+    chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
     updateVolumeData();
   } else {
     if (volumeSeries) chart.removeSeries(volumeSeries);
@@ -661,7 +683,7 @@ async function loadNewProblem() {
     let fetched = [];
     let endTime = Date.now();
     let baseUrl = 'https://api.binance.com/api/v3/klines';
-    if (activeSymbol === 'XAUUSDT') baseUrl = 'https://fapi.binance.com/fapi/v1/klines'; // Gold用先物API
+    if (activeSymbol === 'XAUUSDT') baseUrl = 'https://fapi.binance.com/fapi/v1/klines'; 
 
     for(let i=0; i<3; i++) { // 約3000本取得
       const res = await fetch(`${baseUrl}?symbol=${activeSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
@@ -692,7 +714,7 @@ function applyTimeframe() {
   if(isMaVisible) updateMA();
   if(isVolumeVisible) updateVolumeData();
   const dataLen = visibleData.length;
-  chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 10 });
+  chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 20 });
 }
 function aggregateData(baseArr, tfStr, maxIndex) {
   if (tfStr === '15m') return baseArr.slice(0, maxIndex + 1);
@@ -755,7 +777,6 @@ function getChartCoordinates(clientX, clientY) {
   return { x, y, logical, time: calcTimeFromLogical(logical), price: candleSeries.coordinateToPrice(y) };
 }
 
-// 判定（長押し移動用）
 function hitTest(cx, cy) {
   for (let i = shapes.length - 1; i >= 0; i--) {
     const s = shapes[i];
@@ -828,7 +849,6 @@ function setupPointerEvents() {
       if (hit) {
         selectedShape = hit;
         syncCanvas();
-        // 長押し（0.4秒）で移動モード発動
         longPressTimer = setTimeout(() => {
           isDraggingShape = true;
           dragHandle = hitTestHandle(coord.x, coord.y, hit);
@@ -846,7 +866,6 @@ function setupPointerEvents() {
       return;
     }
     
-    // 【シナリオ作成】 (チャタリング防止0.3秒)
     if (scBuilder.active) { 
       if (Date.now() - lastTapTime < 300) return;
       lastTapTime = Date.now();
@@ -854,7 +873,6 @@ function setupPointerEvents() {
       return; 
     }
     
-    // 【描画モード】
     e.preventDefault(); 
     isDrawing = true; selectedShape = null;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
@@ -863,7 +881,6 @@ function setupPointerEvents() {
   const handleMove = (e) => {
     const coord = getChartCoordinates(e.clientX, e.clientY);
     
-    // 【選択中のドラッグ】
     if (currentTool === 'cursor' && !scBuilder.active) {
       if (isDraggingShape && selectedShape && originalShape) {
         e.preventDefault();
@@ -892,7 +909,6 @@ function setupPointerEvents() {
         }
         syncCanvas();
       } else if (longPressTimer) {
-        // 指が大きく動いたら長押しキャンセル
         clearTimeout(longPressTimer); longPressTimer = null;
       }
       return;
@@ -938,12 +954,8 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      
-      // カーソルモードの場合はチャート自体がスワイプを受け付ける
       canvas.style.pointerEvents = currentTool !== 'cursor' ? 'auto' : 'none';
       chart.applyOptions({ handleScroll: currentTool === 'cursor', handleScale: currentTool === 'cursor' });
-      
-      // シナリオ作成をキャンセル
       if(scBuilder.active) { scBuilder.active = false; hideGuide(); }
       closeAllSheets();
     };
@@ -1011,7 +1023,6 @@ function syncCanvas() {
       ctx.stroke(); 
     }
     
-    // 選択ハイライト（移動用ハンドル）
     if(s === selectedShape) {
       ctx.fillStyle = '#fff'; ctx.beginPath();
       ctx.arc(x1, y1, 6, 0, Math.PI*2); ctx.fill();
@@ -1140,8 +1151,6 @@ function resetFabControls() {
 
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
-  
-  // シミュレーション開始時はキャンバスの描画ロック
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
   canvas.style.pointerEvents = 'none';
 
@@ -1335,12 +1344,11 @@ function endSim(title, pips) {
 function reviewChart() {
   document.getElementById('modal-result').style.display = 'none';
   const fab = document.getElementById('fab-controls');
-  // 振り返り後の導線（「次のチャートへ」ボタン）を表示
   fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
   fab.style.display = 'flex';
 }
 
-// ====== 成績・統計 ======
+// ====== 成績・統計・期間フィルタ ======
 function recordResult(isEntry, isWin, pips) {
   const records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
   records.push({entry: isEntry, win: isWin, pips: pips, ts: Date.now()}); 
