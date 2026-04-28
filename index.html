@@ -50,7 +50,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .top-title { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 900; }
   .top-title span { color: var(--accent); }
   
-  /* Resume Panel (セーブデータ復帰用) */
   #resume-panel { background: rgba(200, 241, 53, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none; flex-direction: column; gap: 8px; }
   #resume-title { font-size: 14px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
   #resume-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
@@ -67,6 +66,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
   
   main { position: relative; flex: 1; width: 100%; background: var(--bg); overflow: hidden; }
   #chart-container { width: 100%; height: 100%; position: absolute; inset: 0; }
+  
+  /* Canvasはタッチを直接受け取らない。コンテナでイベントキャプチャする */
   #canvas-overlay { position: absolute; inset: 0; z-index: 10; touch-action: none; pointer-events: none; }
   
   .info-bar { position: absolute; top: 10px; left: 10px; z-index: 5; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); display:flex; flex-direction:column; gap:4px; pointer-events:none; }
@@ -157,7 +158,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
   <div class="top-content-wrapper">
     <div>
-      <!-- Resume Panel -->
       <div id="resume-panel">
         <div id="resume-title">🔄 中断データがあります</div>
         <div id="resume-desc">進行中のチャレンジデータが見つかりました。<br>続きから再開できます。</div>
@@ -224,7 +224,9 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
     <div id="guide-toast"></div>
     
+    <!-- LWC Container -->
     <div id="chart-container"></div>
+    <!-- Visual Canvas Overlay (touch ignores this layer completely) -->
     <canvas id="canvas-overlay"></canvas>
 
     <div id="action-panel">
@@ -268,7 +270,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div class="color-btn" style="background:#60a5fa;" data-color="#60a5fa"></div>
       <div class="color-btn" style="background:#c8f135;" data-color="#c8f135"></div>
       <div style="display:flex; gap:6px;">
-        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="undoDraw()">↩️ 1つ戻す</button>
+        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="undoDraw()">↩️ 1つ戻る</button>
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="deleteSelectedShape()">🗑️ 選択削除</button>
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--red); color:var(--red);" onclick="clearDraw()">🧹 全消去</button>
       </div>
@@ -776,7 +778,7 @@ function generateDummyData() {
   return fake;
 }
 
-// ★ 大容量の過去データ取得 (15,000本) とランダムなスタート地点
+// 15,000本取得
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-controls').style.display = 'none';
@@ -786,13 +788,10 @@ async function loadNewProblem() {
   
   clearDraw(); scenarios = []; activePos = null; activePaSc = null; renderScenarios(); chartMarkers = []; candleSeries.setMarkers([]);
   
-  // 読込中の表記
   document.getElementById('bars-left-val').innerText = "Loading data...";
 
   try {
     let fetched = [];
-    
-    // 過去3年〜半年前の間でランダムな時間を生成
     const minTime = Date.now() - (365 * 3 * 24 * 60 * 60 * 1000);
     const maxTime = Date.now() - (180 * 24 * 60 * 60 * 1000);
     let endTime = Math.floor(minTime + Math.random() * (maxTime - minTime));
@@ -800,14 +799,12 @@ async function loadNewProblem() {
     let baseUrl = 'https://api.binance.com/api/v3/klines';
     if (activeSymbol === 'XAUUSDT') baseUrl = 'https://fapi.binance.com/fapi/v1/klines'; 
 
-    // 15回ループで最大15000本取得
     for(let i=0; i<15; i++) {
       const res = await fetch(`${baseUrl}?symbol=${activeSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
       if(!res.ok) throw new Error("APIエラー");
       const data = await res.json();
       if(data.length===0) break;
       const formatted = data.map(d => ({ time: d[0]/1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]), ticks: parseFloat(d[5]) }));
-      // 過去に遡って取得するため先頭にくっつける
       fetched = formatted.concat(fetched);
       endTime = data[0][0] - 1;
     }
@@ -817,7 +814,6 @@ async function loadNewProblem() {
     fullBaseData = generateDummyData();
   }
   
-  // 未来の検証用として末尾の200本を隠し、それ以前を表示する
   currentIndex = Math.max(0, fullBaseData.length - 200); 
   initialIndex = currentIndex;
   applyTimeframe();
@@ -879,7 +875,7 @@ function logicalFromTime(t) {
   return r + (t - t1) / (t2 - t1);
 }
 
-// ====== Canvas & ドラッグ ======
+// ====== Canvas & イベントキャプチャ ======
 function resizeCanvas(w, h) {
   const ratio = window.devicePixelRatio || 1; 
   canvasW = w; canvasH = h;
@@ -888,6 +884,13 @@ function resizeCanvas(w, h) {
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   syncCanvas(); 
 }
+
+function getEventCoords(e) {
+  if (e.changedTouches && e.changedTouches.length > 0) return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+  else if (e.touches && e.touches.length > 0) return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+  return { clientX: e.clientX, clientY: e.clientY };
+}
+
 function getChartCoordinates(clientX, clientY) {
   const rect = document.getElementById('chart-container').getBoundingClientRect();
   const x = clientX - rect.left; const y = clientY - rect.top;
@@ -955,53 +958,67 @@ let originalShape = null;
 
 let scTouchStartX = 0, scTouchStartY = 0;
 let isScClickCanceled = false;
+let lastTapTime = 0;
 
+// ★ LWCのコンテナレベルでイベントをインターセプト（Capture Phase）
 function setupPointerEvents() {
+  const container = document.getElementById('chart-container');
+
   const handleDown = (e) => {
-    if (isSimulating) return; // シミュレーション中は全ロック
+    if (isSimulating) return; // 再生中は全ロック
+    const coords = getEventCoords(e);
+    if (coords.clientX == null) return;
+    const coord = getChartCoordinates(coords.clientX, coords.clientY);
 
-    const coord = getChartCoordinates(e.clientX, e.clientY);
-
-    // 【選択・移動モード】 (長押し廃止、ダイレクトドラッグ)
+    // 【選択・ダイレクトドラッグ移動モード】
     if (currentTool === 'cursor' && !scBuilder.active) {
       const hit = hitTest(coord.x, coord.y);
       if (hit) {
+        e.stopPropagation(); // LWCにイベントを渡さない（スクロール停止）
+        if(e.cancelable) e.preventDefault();
+        
         selectedShape = hit;
         isDraggingShape = true;
         dragHandle = hitTestHandle(coord.x, coord.y, hit);
         dragStartLogical = coord.logical;
         dragStartPrice = coord.price;
         originalShape = JSON.parse(JSON.stringify(hit));
-        chart.applyOptions({ handleScroll: false, handleScale: false });
         syncCanvas();
       } else {
         selectedShape = null;
         syncCanvas();
+        // hitしなければ何もしない＝LWCがスクロールを受け取る
       }
       return;
     }
     
     // 【シナリオ作成】
     if (scBuilder.active) {
-      scTouchStartX = e.clientX; scTouchStartY = e.clientY;
+      e.stopPropagation();
+      if(e.cancelable) e.preventDefault();
+      scTouchStartX = coords.clientX; scTouchStartY = coords.clientY;
       isScClickCanceled = false;
       return;
     }
     
     // 【描画モード】
-    e.preventDefault(); 
+    e.stopPropagation();
+    if(e.cancelable) e.preventDefault();
     isDrawing = true; selectedShape = null;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
   };
 
   const handleMove = (e) => {
     if (isSimulating) return;
-    const coord = getChartCoordinates(e.clientX, e.clientY);
+    const coords = getEventCoords(e);
+    if (coords.clientX == null) return;
+    const coord = getChartCoordinates(coords.clientX, coords.clientY);
     
-    // 【選択中のドラッグ】
     if (currentTool === 'cursor' && !scBuilder.active) {
       if (isDraggingShape && selectedShape && originalShape) {
-        e.preventDefault();
+        e.stopPropagation();
+        if(e.cancelable) e.preventDefault();
+        
         const dLog = coord.logical - dragStartLogical;
         const dPrice = coord.price - dragStartPrice;
 
@@ -1031,8 +1048,10 @@ function setupPointerEvents() {
     }
 
     if (scBuilder.active) { 
-      // 指が大きく動いたら誤作動防止でタップキャンセル
-      if (Math.hypot(e.clientX - scTouchStartX, e.clientY - scTouchStartY) > 15) {
+      e.stopPropagation();
+      if(e.cancelable) e.preventDefault();
+      
+      if (Math.hypot(coords.clientX - scTouchStartX, coords.clientY - scTouchStartY) > 15) {
         isScClickCanceled = true;
       }
       scBuilder.mouseX = coord.x; scBuilder.mouseY = coord.y; 
@@ -1042,38 +1061,54 @@ function setupPointerEvents() {
     }
     
     if (!isDrawing) return;
-    e.preventDefault();
+    e.stopPropagation();
+    if(e.cancelable) e.preventDefault();
     if (currentTool === 'pen') currentShape.points.push({time: coord.time, price: coord.price});
     else currentShape.p2 = {time: coord.time, price: coord.price};
     syncCanvas(); 
   };
 
-  const handleUp = (e) => {
+  const handleEnd = (e) => {
+    const coords = getEventCoords(e);
+    
     if (isDraggingShape) {
+      e.stopPropagation();
+      if(e.cancelable) e.preventDefault();
       isDraggingShape = false; dragHandle = null; originalShape = null;
-      chart.applyOptions({ handleScroll: true, handleScale: true });
       return;
     }
 
     if (scBuilder.active) {
-      if (!isScClickCanceled) {
-        const coord = getChartCoordinates(e.clientX, e.clientY);
+      e.stopPropagation();
+      if(e.cancelable) e.preventDefault();
+      
+      // チャタリング防止＆大きなズレ防止
+      if (Date.now() - lastTapTime < 300) return;
+      
+      if (!isScClickCanceled && coords.clientX != null) {
+        lastTapTime = Date.now();
+        const coord = getChartCoordinates(coords.clientX, coords.clientY);
         handleScenarioClick(coord);
       }
       return;
     }
     
     if (!isDrawing) return;
+    e.stopPropagation();
+    if(e.cancelable) e.preventDefault();
+    
     isDrawing = false;
     if (currentShape) shapes.push(currentShape);
     currentShape = null;
     document.querySelector('.tool-btn[data-tool="cursor"]').click();
   };
 
-  canvas.addEventListener('pointerdown', handleDown, {passive: false});
-  canvas.addEventListener('pointermove', handleMove, {passive: false});
-  canvas.addEventListener('pointerup', handleUp);
-  canvas.addEventListener('pointercancel', handleUp);
+  container.addEventListener('touchstart', handleDown, {capture: true, passive: false});
+  container.addEventListener('touchmove', handleMove, {capture: true, passive: false});
+  container.addEventListener('touchend', handleEnd, {capture: true, passive: false});
+  container.addEventListener('mousedown', handleDown, {capture: true});
+  container.addEventListener('mousemove', handleMove, {capture: true});
+  container.addEventListener('mouseup', handleEnd, {capture: true});
 }
 
 function setupTools() {
@@ -1081,8 +1116,6 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      canvas.style.pointerEvents = currentTool !== 'cursor' ? 'auto' : 'none';
-      chart.applyOptions({ handleScroll: currentTool === 'cursor', handleScale: currentTool === 'cursor' });
       if(scBuilder.active) { scBuilder.active = false; hideGuide(); }
       closeAllSheets();
     };
@@ -1191,8 +1224,6 @@ function startScenarioBuilder(type) {
   scBuilder = { active: true, type: type, step: 0 };
   if(type === 'skip') { openReasonModal('skip'); } 
   else { 
-    canvas.style.pointerEvents = 'auto'; 
-    chart.applyOptions({ handleScroll: false, handleScale: false }); 
     showGuide("👆 1. エントリー価格をタップ"); 
   }
 }
@@ -1278,10 +1309,8 @@ function resetFabControls() {
 
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
-  
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
-  canvas.style.pointerEvents = 'none'; 
-
+  
   resetFabControls();
   document.getElementById('fab-controls').style.display = 'flex';
   document.getElementById('btn-toggle-play').innerText = '⏸️';
@@ -1476,7 +1505,9 @@ function reviewChart() {
   const fab = document.getElementById('fab-controls');
   fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
   fab.style.display = 'flex';
-  canvas.style.pointerEvents = 'auto'; // タッチ復活
+  
+  // 振り返り時はカーソルモードに強制的に戻し、チャートのスクロールを有効化する
+  document.querySelector('.tool-btn[data-tool="cursor"]').click();
 }
 
 // ====== 成績・統計・期間フィルタ ======
