@@ -68,26 +68,24 @@ document.addEventListener('lwc-ready', _onLwcReady);
   #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
   #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 12px 16px; border-radius: 20px; display: none; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 340px; }
-  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
+  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
   .fab-btn { background: transparent; border: none; color: var(--text); font-size: 20px; padding: 4px; cursor: pointer; }
+  .fab-btn-small { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); font-size: 11px; padding: 6px 12px; border-radius: 14px; cursor: pointer; display: none; }
   
-  /* ボトムナビ: z-indexを100に設定 */
+  /* ボトムナビ: Indiを追加 */
   .bottom-nav { height: var(--nav-height); background: var(--bg-panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
   .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px; gap: 4px; background: transparent; border: none; }
   .nav-item.active { color: var(--accent); }
   .nav-icon { font-size: 20px; }
 
-  /* シート & バックドロップ: z-indexをナビより高く設定（110, 120） */
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 110; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
   .backdrop.show { opacity: 1; pointer-events: auto; }
   
-  /* padding-bottom を広めに取り、最下部のボタンが押しやすくなるよう調整 */
   .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 120; padding: 16px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
   .bottom-sheet.open { transform: translateY(0); }
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
   .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color:var(--text); flex-shrink: 0; }
   
-  /* ツールボタングリッド */
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; color: var(--text); }
   .tool-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.1); }
@@ -112,9 +110,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono'; }
   .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 
-  /* ==========================================
-     横画面 (Landscape) の最適化
-     ========================================== */
+  .indi-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+
   @media (orientation: landscape) {
     :root { --header-height: 44px; --nav-height: 50px; }
     .top-header { margin: 5px 0 10px; }
@@ -158,16 +155,14 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div style="margin-bottom:16px;">
         <label style="font-size:12px; color:var(--text-muted);">通貨ペア選択</label>
         <select id="top-symbol-sel" class="input-field" style="margin-top:6px; font-family:'DM Mono';">
-          <option value="PAXGUSDT">XAU/USD (Gold)</option>
+          <option value="XAUUSDT">XAU/USD (Gold)</option>
           <option value="BTCUSDT" selected>BTC/USD (Bitcoin)</option>
         </select>
       </div>
-
       <div style="margin-bottom:24px;">
         <button class="btn" style="background:rgba(200,241,53,0.05); border-color:var(--accent); color:var(--accent);" onclick="openTopStatsModal()">📊 あなたの成績サマリーを見る</button>
       </div>
     </div>
-
     <div>
       <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">🎮 モード選択</div>
       <div class="mode-card" onclick="startGame('free')" style="border-left:4px solid var(--green);">
@@ -228,12 +223,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
 
     <div id="fab-controls">
-      <button class="fab-btn" onclick="stepCandleEngine()" style="font-size:16px;">⏭ 1本</button>
-      <div style="width:1px; height:20px; background:var(--border);"></div>
-      <button class="fab-btn" id="btn-toggle-play" onclick="togglePlayPause()" style="color:var(--accent); font-size:24px;">▶️</button>
-      <div style="width:1px; height:20px; background:var(--border);"></div>
-      <button class="fab-btn" onclick="skipToFinalResult()" style="font-size:14px; color:var(--text-muted);">⏩ 即結果</button>
-    </div>
+      </div>
   </main>
 
   <div class="backdrop" id="backdrop" onclick="closeAllSheets()"></div>
@@ -257,7 +247,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div class="color-btn" style="background:#f87171;" data-color="#f87171"></div>
       <div class="color-btn" style="background:#60a5fa;" data-color="#60a5fa"></div>
       <div class="color-btn" style="background:#c8f135;" data-color="#c8f135"></div>
-      
       <div style="display:flex; gap:6px;">
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="deleteSelectedShape()">🗑️ 選択削除</button>
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--red); color:var(--red);" onclick="clearDraw()">🧹 全消去</button>
@@ -274,6 +263,34 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="btn btn-short" onclick="startScenarioBuilder('short')">📉 ショートシナリオ作成</button>
       <button class="btn" onclick="startScenarioBuilder('skip')">🙈 見送る (No Trade)</button>
       <button class="btn btn-primary" id="btn-start-sim" onclick="startSimulation()" disabled>▶ 検証スタート</button>
+    </div>
+  </div>
+
+  <div class="bottom-sheet" id="sheet-indi">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📈 インジケーター</div>
+    
+    <div class="indi-row">
+      <span style="font-size:14px; font-weight:bold;">📊 ティックボリューム</span>
+      <button class="btn" id="btn-toggle-vol" style="width:auto; padding:6px 16px;" onclick="toggleVolume()">OFF</button>
+    </div>
+    <hr style="border:none; border-top:1px solid var(--border); margin:10px 0 20px;">
+    
+    <div style="font-size:14px; font-weight:bold; margin-bottom:15px;">移動平均線 (MA)</div>
+    <div class="indi-row">
+      <button class="btn" id="ma-vis-0" style="width:44px; padding:8px; border-color:#60a5fa; color:#60a5fa;" onclick="toggleMALine(0)">●</button>
+      <button class="btn" id="ma-type-0" style="width:70px; padding:8px;" onclick="toggleMAType(0)">SMA</button>
+      <input type="number" id="ma-len-0" class="input-field" value="20" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
+    </div>
+    <div class="indi-row">
+      <button class="btn" id="ma-vis-1" style="width:44px; padding:8px; border-color:#fbbf24; color:#fbbf24;" onclick="toggleMALine(1)">●</button>
+      <button class="btn" id="ma-type-1" style="width:70px; padding:8px;" onclick="toggleMAType(1)">SMA</button>
+      <input type="number" id="ma-len-1" class="input-field" value="50" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
+    </div>
+    <div class="indi-row">
+      <button class="btn" id="ma-vis-2" style="width:44px; padding:8px; border-color:#f87171; color:#f87171;" onclick="toggleMALine(2)">●</button>
+      <button class="btn" id="ma-type-2" style="width:70px; padding:8px;" onclick="toggleMAType(2)">SMA</button>
+      <input type="number" id="ma-len-2" class="input-field" value="200" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
     </div>
   </div>
 
@@ -296,7 +313,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <option value="touch_every">タッチする度毎回確認</option>
       <option value="in_zone">期限内に入ったら常にコマ送り</option>
     </select>
-    <label style="font-size:12px; color:var(--text-muted);">再生スピード</label>
+    <label style="font-size:12px; color:var(--text-muted);">自動再生スピード</label>
     <input type="range" id="cfg-speed" min="1" max="10" value="5" style="width:100%; margin-bottom:20px;">
   </div>
 
@@ -304,6 +321,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <button class="nav-item active" onclick="switchTab('chart', this); closeAllSheets();"><span class="nav-icon">📊</span><span>Chart</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-tools', this)"><span class="nav-icon">✏️</span><span>Tools</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-scenario', this)"><span class="nav-icon">🎯</span><span>Plan</span></button>
+    <button class="nav-item" onclick="toggleSheet('sheet-indi', this)"><span class="nav-icon">📈</span><span>Indi</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-menu', this)"><span class="nav-icon">⚙️</span><span>Menu</span></button>
   </nav>
 </div>
@@ -352,7 +370,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   <div class="modal-content">
     <div class="res-title" id="res-title"></div>
     <div id="res-desc" style="font-size:14px; color:var(--text-muted); margin-bottom:10px;"></div>
-    
     <div id="fintokei-alert" style="display:none; font-size:13px; font-weight:bold; margin-bottom:15px; padding:10px; border-radius:8px;"></div>
     
     <div style="background:rgba(96,165,250,0.1); border:1px solid var(--blue); padding:16px; border-radius:12px; margin-bottom:20px;">
@@ -362,8 +379,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="btn" style="background:var(--blue); color:#fff; border:none;" onclick="executeSubmitDiscord(this)">📤 送信する</button>
     </div>
     <div style="display:flex; gap:10px; flex-direction:column;">
-      <button class="btn btn-primary" onclick="nextProblem()">⏭ 次のチャートへ</button>
-      <button class="btn" onclick="document.getElementById('modal-result').style.display='none';">🔍 閉じてチャートを確認</button>
+      <button class="btn btn-primary" onclick="nextProblem()">⏭ 次のチャートへ進む</button>
+      <button class="btn" onclick="reviewChart()">🔍 閉じてチャートを振り返る</button>
     </div>
   </div>
 </div>
@@ -385,7 +402,6 @@ let activeSymbol = 'BTCUSDT';
 let appMode = 'free';
 let chartMarkers = [];
 
-// 描画関連
 const canvas = document.getElementById('canvas-overlay');
 let ctx = canvas.getContext('2d');
 let currentTool = 'cursor';
@@ -400,6 +416,14 @@ let isPaMode = false, activePaSc = null;
 
 let ftkPnlPips = 0; let ftkPeakPnl = 0; 
 
+let maSeriesList = [];
+let isMaVisible = false;
+let maColors = ['#60a5fa', '#fbbf24', '#f87171'];
+let maTypes = ['SMA', 'SMA', 'SMA'];
+let maVisible = [true, true, true];
+let volumeSeries = null;
+let isVolumeVisible = false;
+
 function requestFullScreen() {
   const docEl = document.documentElement;
   if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -409,7 +433,7 @@ function requestFullScreen() {
 }
 
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
-function _startInit() { }
+function _startInit() {}
 
 async function attemptLogin(tryFullscreen = false) {
   if(tryFullscreen) requestFullScreen(); 
@@ -456,6 +480,16 @@ function initChartSystem() {
 
   candleSeries = chart.addCandlestickSeries({ upColor: '#4ade80', downColor: '#f87171', borderVisible: false, wickUpColor: '#4ade80', wickDownColor: '#f87171' });
 
+  chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+    if(visibleData.length === 0) return;
+    const range = chart.timeScale().getVisibleLogicalRange();
+    const btnLatest = document.getElementById('btn-scroll-latest');
+    if (btnLatest) {
+      if (range && range.to < visibleData.length - 2) btnLatest.style.display = 'inline-block';
+      else btnLatest.style.display = 'none';
+    }
+  });
+
   new ResizeObserver(entries => {
     if (entries.length === 0 || entries[0].target !== container) return;
     const newRect = entries[0].contentRect;
@@ -467,6 +501,11 @@ function initChartSystem() {
   setupTools();
   setupPointerEvents();
   startRenderLoop();
+  resetFabControls();
+}
+
+function scrollToLatest() {
+  chart.timeScale().scrollToRealTime();
 }
 
 function goToTop() {
@@ -500,10 +539,10 @@ function startGame(mode) {
     chart.applyOptions({ width: w, height: h });
     resizeCanvas(w, h);
   }
+  resetFabControls();
   loadNewProblem();
 }
 
-// ====== UI Sheet ======
 let currentActiveSheet = null;
 function toggleSheet(sheetId, btnElement) {
   const sheet = document.getElementById(sheetId);
@@ -524,34 +563,119 @@ function switchTab(tab, btnElement) {
   if(btnElement) btnElement.classList.add('active');
 }
 
-// ====== データ取得・正確な時間補間 ======
+// ====== インジケーター ======
+function toggleVolume() {
+  isVolumeVisible = !isVolumeVisible;
+  const btn = document.getElementById('btn-toggle-vol');
+  btn.innerText = isVolumeVisible ? 'ON' : 'OFF';
+  btn.style.color = isVolumeVisible ? 'var(--accent)' : 'var(--text)';
+  btn.style.borderColor = isVolumeVisible ? 'var(--accent)' : 'var(--border)';
+  if (isVolumeVisible) {
+    volumeSeries = chart.addHistogramSeries({ color: 'rgba(96,165,250,0.35)', priceFormat: { type: 'volume' }, priceScaleId: 'volume', scaleMargins: { top: 0.8, bottom: 0 } });
+    updateVolumeData();
+  } else {
+    if (volumeSeries) chart.removeSeries(volumeSeries);
+    volumeSeries = null;
+  }
+}
+function updateVolumeData() {
+  if (!isVolumeVisible || !volumeSeries || visibleData.length === 0) return;
+  const volData = visibleData.map(c => ({ time: c.time, value: c.ticks || Math.floor(Math.random()*100)+50, color: c.close >= c.open ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)' }));
+  volumeSeries.setData(volData);
+}
+
+function toggleMALine(idx) {
+  maVisible[idx] = !maVisible[idx];
+  const btn = document.getElementById('ma-vis-'+idx);
+  btn.innerText = maVisible[idx] ? '●' : '○';
+  btn.style.opacity = maVisible[idx] ? '1' : '0.4';
+  isMaVisible = maVisible.some(v=>v);
+  updateMA();
+}
+function toggleMAType(idx) {
+  maTypes[idx] = maTypes[idx] === 'SMA' ? 'EMA' : 'SMA';
+  document.getElementById('ma-type-'+idx).innerText = maTypes[idx];
+  updateMA();
+}
+function updateMA() {
+  maSeriesList.forEach(s => { if(s.series) chart.removeSeries(s.series); });
+  maSeriesList = [];
+  if (!isMaVisible || visibleData.length === 0) return;
+  
+  for(let idx=0; idx<3; idx++) {
+    if (!maVisible[idx]) continue;
+    const period = parseInt(document.getElementById('ma-len-'+idx).value) || 20;
+    const type = maTypes[idx];
+    let maData = [];
+    
+    if (type === 'SMA') {
+      for (let i = period - 1; i < visibleData.length; i++) {
+        let sum = 0; for (let j = 0; j < period; j++) sum += visibleData[i - j].close;
+        maData.push({ time: visibleData[i].time, value: sum / period });
+      }
+    } else { 
+      const k = 2 / (period + 1);
+      if (visibleData.length >= period) {
+        let sum = 0; for (let i = 0; i < period; i++) sum += visibleData[i].close;
+        let ema = sum / period;
+        maData.push({ time: visibleData[period - 1].time, value: ema });
+        for (let i = period; i < visibleData.length; i++) {
+          ema = visibleData[i].close * k + ema * (1 - k);
+          maData.push({ time: visibleData[i].time, value: ema });
+        }
+      }
+    }
+    const s = chart.addLineSeries({ color: maColors[idx], lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
+    s.setData(maData);
+    maSeriesList.push({ series: s });
+  }
+}
+
+// ====== データ取得 ======
+function generateDummyData() {
+  const fake = [];
+  let time = Math.floor(Date.now()/1000) - 86400*30;
+  let price = activeSymbol === 'BTCUSDT' ? 60000 : 2300;
+  for(let i=0; i<1000; i++){
+    time += 900;
+    const open = price + (Math.random()-0.5)*10;
+    const high = open + Math.random()*20;
+    const low = open - Math.random()*20;
+    const close = (high+low)/2 + (Math.random()-0.5)*10;
+    fake.push({time, open, high, low, close, ticks: Math.floor(Math.random()*200)+50});
+    price = close;
+  }
+  return fake;
+}
+
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-controls').style.display = 'none';
   document.getElementById('action-panel').style.display = 'none';
   document.getElementById('modal-result').style.display = 'none';
+  resetFabControls();
+  
   clearDraw(); scenarios = []; activePos = null; activePaSc = null; renderScenarios(); chartMarkers = []; candleSeries.setMarkers([]);
   
   try {
     let fetched = [];
     let endTime = Date.now();
-    // 3回ループで約3000本(過去数ヶ月分)のデータを取得
-    for(let i=0; i<3; i++) {
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${activeSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
+    let baseUrl = 'https://api.binance.com/api/v3/klines';
+    if (activeSymbol === 'XAUUSDT') baseUrl = 'https://fapi.binance.com/fapi/v1/klines'; // Gold用先物API
+
+    for(let i=0; i<3; i++) { // 約3000本取得
+      const res = await fetch(`${baseUrl}?symbol=${activeSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
       if(!res.ok) throw new Error("APIエラー");
       const data = await res.json();
       if(data.length===0) break;
-      const formatted = data.map(d => ({ time: d[0]/1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]) }));
+      const formatted = data.map(d => ({ time: d[0]/1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]), ticks: parseFloat(d[5]) }));
       fetched = formatted.concat(fetched);
       endTime = data[0][0] - 1;
     }
     fullBaseData = fetched;
   } catch (err) { 
     console.log("API Error", err); 
-    // フォールバックダミー生成
-    let fake = []; let time = Math.floor(Date.now()/1000) - 86400*30; let price = 60000;
-    for(let i=0; i<3000; i++){ time += 900; const o=price+(Math.random()-0.5)*10; const h=o+Math.random()*20; const l=o-Math.random()*20; const c=(h+l)/2+(Math.random()-0.5)*10; fake.push({time, open:o, high:h, low:l, close:c}); price = c; }
-    fullBaseData = fake;
+    fullBaseData = generateDummyData();
   }
   
   currentIndex = Math.max(0, fullBaseData.length - 200); 
@@ -565,6 +689,8 @@ function applyTimeframe() {
   if(fullBaseData.length===0) return;
   visibleData = aggregateData(fullBaseData, currentTF, currentIndex);
   candleSeries.setData(visibleData);
+  if(isMaVisible) updateMA();
+  if(isVolumeVisible) updateVolumeData();
   const dataLen = visibleData.length;
   chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 10 });
 }
@@ -573,13 +699,16 @@ function aggregateData(baseArr, tfStr, maxIndex) {
   const sec = tfStr === '1h' ? 3600 : 14400; const res = []; let cur = null;
   for(let i=0; i<=maxIndex && i<baseArr.length; i++) {
     const c = baseArr[i]; const t = Math.floor(c.time / sec) * sec;
-    if(!cur || cur.time !== t) { if(cur) res.push({...cur}); cur = { time: t, open: c.open, high: c.high, low: c.low, close: c.close }; }
-    else { cur.high = Math.max(cur.high, c.high); cur.low = Math.min(cur.low, c.low); cur.close = c.close; }
+    if(!cur || cur.time !== t) { 
+      if(cur) res.push({...cur}); 
+      cur = { time: t, open: c.open, high: c.high, low: c.low, close: c.close, ticks: c.ticks }; 
+    } else { 
+      cur.high = Math.max(cur.high, c.high); cur.low = Math.min(cur.low, c.low); cur.close = c.close; cur.ticks += c.ticks; 
+    }
   }
   if(cur) res.push(cur); return res;
 }
 
-// ★ 高精度な時間と座標の補間アルゴリズム
 function calcTimeFromLogical(logical) {
   if (logical === null || isNaN(logical) || visibleData.length === 0) return null;
   const maxIdx = visibleData.length - 1;
@@ -610,7 +739,7 @@ function logicalFromTime(t) {
   return r + (t - t1) / (t2 - t1);
 }
 
-// ====== Canvas & タッチ ======
+// ====== Canvas & ドラッグ ======
 function resizeCanvas(w, h) {
   const ratio = window.devicePixelRatio || 1; 
   canvasW = w; canvasH = h;
@@ -626,7 +755,7 @@ function getChartCoordinates(clientX, clientY) {
   return { x, y, logical, time: calcTimeFromLogical(logical), price: candleSeries.coordinateToPrice(y) };
 }
 
-// 選択ヒットテスト（指でタップした時にラインを検知する）
+// 判定（長押し移動用）
 function hitTest(cx, cy) {
   for (let i = shapes.length - 1; i >= 0; i--) {
     const s = shapes[i];
@@ -637,16 +766,16 @@ function hitTest(cx, cy) {
     if (x1 == null || y1 == null) continue;
 
     if (s.type === 'hline' || s.type === 'hray') {
-      if (Math.abs(cy - y1) < 15) return s;
+      if (Math.abs(cy - y1) < 20) return s;
     } else if (s.type === 'trendline' || s.type === 'eray' || s.type === 'fibo') {
       if (x2 != null && y2 != null) {
         const ex2 = s.type === 'eray' ? canvasW : x2;
         const ey2 = s.type === 'eray' ? (y1 + (y2-y1)/(x2-x1)*(canvasW-x1)) : y2;
         const l2 = (x1 - ex2)**2 + (y1 - ey2)**2;
-        if (l2 === 0) { if(Math.hypot(cx - x1, cy - y1) < 15) return s; continue; }
+        if (l2 === 0) { if(Math.hypot(cx - x1, cy - y1) < 20) return s; continue; }
         let t = ((cx - x1)*(ex2 - x1) + (cy - y1)*(ey2 - y1)) / l2;
         t = Math.max(0, Math.min(1, t));
-        if (Math.hypot(cx - (x1 + t*(ex2 - x1)), cy - (y1 + t*(ey2 - y1))) < 15) return s;
+        if (Math.hypot(cx - (x1 + t*(ex2 - x1)), cy - (y1 + t*(ey2 - y1))) < 20) return s;
       }
     } else if (s.type === 'zone') {
       if (x2 != null && y2 != null) {
@@ -658,47 +787,139 @@ function hitTest(cx, cy) {
       for(let p of s.points) {
          const px = chart.timeScale().logicalToCoordinate(logicalFromTime(p.time));
          const py = candleSeries.priceToCoordinate(p.price);
-         if(px!=null && py!=null && Math.hypot(cx-px, cy-py) < 15) return s;
+         if(px!=null && py!=null && Math.hypot(cx-px, cy-py) < 20) return s;
       }
     }
   }
   return null;
 }
 
+function hitTestHandle(cx, cy, s) {
+  const log1 = logicalFromTime(s.p1.time);
+  const x1 = chart.timeScale().logicalToCoordinate(log1);
+  const y1 = candleSeries.priceToCoordinate(s.p1.price);
+  if (Math.hypot(cx - x1, cy - y1) < 25) return 'p1';
+  
+  if (s.p2) {
+    const log2 = logicalFromTime(s.p2.time);
+    const x2 = chart.timeScale().logicalToCoordinate(log2);
+    const y2 = candleSeries.priceToCoordinate(s.p2.price);
+    if (Math.hypot(cx - x2, cy - y2) < 25) return 'p2';
+  }
+  return 'body';
+}
+
+let lastTapTime = 0; 
+let isDraggingShape = false;
+let dragHandle = null;
+let dragStartLogical = 0, dragStartPrice = 0;
+let originalShape = null;
+let longPressTimer = null;
+
 function setupPointerEvents() {
   const handleDown = (e) => {
-    // スクロール時にCanvasが反応するのを防ぐ
+    if (isSimulating) return;
+
+    const coord = getChartCoordinates(e.clientX, e.clientY);
+
+    // 【選択・長押し移動モード】
     if (currentTool === 'cursor' && !scBuilder.active) {
-      // 選択処理 (Hit Test)
-      const coord = getChartCoordinates(e.clientX, e.clientY);
-      selectedShape = hitTest(coord.x, coord.y);
-      syncCanvas();
+      const hit = hitTest(coord.x, coord.y);
+      if (hit) {
+        selectedShape = hit;
+        syncCanvas();
+        // 長押し（0.4秒）で移動モード発動
+        longPressTimer = setTimeout(() => {
+          isDraggingShape = true;
+          dragHandle = hitTestHandle(coord.x, coord.y, hit);
+          dragStartLogical = coord.logical;
+          dragStartPrice = coord.price;
+          originalShape = JSON.parse(JSON.stringify(hit));
+          chart.applyOptions({ handleScroll: false, handleScale: false });
+          showGuide("✨ 移動モード：スライドして配置");
+          if(navigator.vibrate) navigator.vibrate(50);
+        }, 400);
+      } else {
+        selectedShape = null;
+        syncCanvas();
+      }
       return;
     }
     
-    e.preventDefault(); 
-    const coord = getChartCoordinates(e.clientX, e.clientY);
-    if (scBuilder.active) { handleScenarioClick(coord); return; }
+    // 【シナリオ作成】 (チャタリング防止0.3秒)
+    if (scBuilder.active) { 
+      if (Date.now() - lastTapTime < 300) return;
+      lastTapTime = Date.now();
+      handleScenarioClick(coord); 
+      return; 
+    }
     
+    // 【描画モード】
+    e.preventDefault(); 
     isDrawing = true; selectedShape = null;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
   };
 
   const handleMove = (e) => {
     const coord = getChartCoordinates(e.clientX, e.clientY);
+    
+    // 【選択中のドラッグ】
+    if (currentTool === 'cursor' && !scBuilder.active) {
+      if (isDraggingShape && selectedShape && originalShape) {
+        e.preventDefault();
+        const dLog = coord.logical - dragStartLogical;
+        const dPrice = coord.price - dragStartPrice;
+
+        if (dragHandle === 'p1') {
+            selectedShape.p1.time = calcTimeFromLogical(logicalFromTime(originalShape.p1.time) + dLog);
+            selectedShape.p1.price = originalShape.p1.price + dPrice;
+        } else if (dragHandle === 'p2' && selectedShape.p2) {
+            selectedShape.p2.time = calcTimeFromLogical(logicalFromTime(originalShape.p2.time) + dLog);
+            selectedShape.p2.price = originalShape.p2.price + dPrice;
+        } else { 
+            selectedShape.p1.time = calcTimeFromLogical(logicalFromTime(originalShape.p1.time) + dLog);
+            selectedShape.p1.price = originalShape.p1.price + dPrice;
+            if (selectedShape.p2) {
+                selectedShape.p2.time = calcTimeFromLogical(logicalFromTime(originalShape.p2.time) + dLog);
+                selectedShape.p2.price = originalShape.p2.price + dPrice;
+            }
+            if (selectedShape.points) {
+                selectedShape.points.forEach((p, i) => {
+                    p.time = calcTimeFromLogical(logicalFromTime(originalShape.points[i].time) + dLog);
+                    p.price = originalShape.points[i].price + dPrice;
+                });
+            }
+        }
+        syncCanvas();
+      } else if (longPressTimer) {
+        // 指が大きく動いたら長押しキャンセル
+        clearTimeout(longPressTimer); longPressTimer = null;
+      }
+      return;
+    }
+
     if (scBuilder.active) { 
       scBuilder.mouseX = coord.x; scBuilder.mouseY = coord.y; 
       scBuilder.priceHover = coord.price; scBuilder.timeHover = coord.time; 
       return; 
     }
+    
     if (!isDrawing) return;
     e.preventDefault();
     if (currentTool === 'pen') currentShape.points.push({time: coord.time, price: coord.price});
     else currentShape.p2 = {time: coord.time, price: coord.price};
-    syncCanvas(); // ドラッグ中もリアルタイム描画
+    syncCanvas(); 
   };
 
   const handleUp = (e) => {
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    if (isDraggingShape) {
+      isDraggingShape = false; dragHandle = null; originalShape = null;
+      chart.applyOptions({ handleScroll: true, handleScale: true });
+      hideGuide();
+      return;
+    }
+    
     if (!isDrawing) return;
     isDrawing = false;
     if (currentShape) shapes.push(currentShape);
@@ -717,21 +938,24 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      // カーソルモード以外はCanvasが全面タッチを吸収する
+      
+      // カーソルモードの場合はチャート自体がスワイプを受け付ける
       canvas.style.pointerEvents = currentTool !== 'cursor' ? 'auto' : 'none';
       chart.applyOptions({ handleScroll: currentTool === 'cursor', handleScale: currentTool === 'cursor' });
+      
+      // シナリオ作成をキャンセル
+      if(scBuilder.active) { scBuilder.active = false; hideGuide(); }
       closeAllSheets();
     };
   });
   document.querySelectorAll('.color-btn').forEach(b => b.onclick = () => {
     document.querySelectorAll('.color-btn').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); drawSettings.color = b.dataset.color;
-    // もし選択中の図形があれば色を変更
     if (selectedShape) { selectedShape.color = drawSettings.color; syncCanvas(); }
   });
 }
-function undoDraw() { shapes.pop(); selectedShape = null; closeAllSheets(); }
-function clearDraw() { shapes = []; selectedShape = null; closeAllSheets(); }
+function undoDraw() { shapes.pop(); selectedShape = null; closeAllSheets(); syncCanvas(); }
+function clearDraw() { shapes = []; selectedShape = null; closeAllSheets(); syncCanvas(); }
 function deleteSelectedShape() { 
   if(selectedShape) { shapes = shapes.filter(s => s !== selectedShape); selectedShape = null; syncCanvas(); } 
   closeAllSheets(); 
@@ -764,7 +988,7 @@ function syncCanvas() {
     }
     else if(s.type === 'fibo' && x2!=null && y2!=null) {
       ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-      const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.618];
+      const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
       const diff = s.p2.price - s.p1.price;
       levels.forEach(lv => {
         const p = s.p1.price + diff * lv;
@@ -787,11 +1011,11 @@ function syncCanvas() {
       ctx.stroke(); 
     }
     
-    // 選択中のハイライト表示
+    // 選択ハイライト（移動用ハンドル）
     if(s === selectedShape) {
       ctx.fillStyle = '#fff'; ctx.beginPath();
-      ctx.arc(x1, y1, 5, 0, Math.PI*2); ctx.fill();
-      if(x2!=null) { ctx.beginPath(); ctx.arc(x2, y2, 5, 0, Math.PI*2); ctx.fill(); }
+      ctx.arc(x1, y1, 6, 0, Math.PI*2); ctx.fill();
+      if(x2!=null) { ctx.beginPath(); ctx.arc(x2, y2, 6, 0, Math.PI*2); ctx.fill(); }
     }
   });
 
@@ -829,7 +1053,6 @@ function startScenarioBuilder(type) {
   scBuilder = { active: true, type: type, step: 0 };
   if(type === 'skip') { openReasonModal('skip'); } 
   else { 
-    // シナリオ作成時はCanvasがタップを拾うようにする
     canvas.style.pointerEvents = 'auto'; 
     chart.applyOptions({ handleScroll: false, handleScale: false }); 
     showGuide("👆 1. エントリー価格をタップ"); 
@@ -904,13 +1127,31 @@ function renderScenarios() {
 }
 
 // ====== シミュレーション ======
+function resetFabControls() {
+  document.getElementById('fab-controls').innerHTML = `
+    <button class="fab-btn-small" id="btn-scroll-latest" onclick="scrollToLatest()">⏩ 最新へ</button>
+    <button class="fab-btn" onclick="stepCandleEngine()" style="font-size:16px;">⏭ 1本</button>
+    <div style="width:1px; height:20px; background:var(--border);"></div>
+    <button class="fab-btn" id="btn-toggle-play" onclick="togglePlayPause()" style="color:var(--accent); font-size:24px;">▶️</button>
+    <div style="width:1px; height:20px; background:var(--border);"></div>
+    <button class="fab-btn" onclick="skipToFinalResult()" style="font-size:14px; color:var(--text-muted);">⏩ 即結果</button>
+  `;
+}
+
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
+  
+  // シミュレーション開始時はキャンバスの描画ロック
+  document.querySelector('.tool-btn[data-tool="cursor"]').click();
+  canvas.style.pointerEvents = 'none';
+
+  resetFabControls();
   document.getElementById('fab-controls').style.display = 'flex';
   document.getElementById('btn-toggle-play').innerText = '⏸️';
   scenarios.forEach(sc => { sc.triggered = false; sc.lastSkipTime = null; });
   resumeSimulation();
 }
+
 function togglePlayPause() {
   const btn = document.getElementById('btn-toggle-play');
   if(isSimulating) { isSimulating=false; clearTimeout(simTimeout); btn.innerText='▶️'; }
@@ -969,14 +1210,24 @@ function stepCandleEngine() {
   currentIndex++; const baseC = fullBaseData[currentIndex];
   const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400; const t = Math.floor(baseC.time / sec) * sec;
   let last = visibleData[visibleData.length - 1];
-  if (last.time === t) { last.high = Math.max(last.high, baseC.high); last.low = Math.min(last.low, baseC.low); last.close = baseC.close; candleSeries.update(last); }
-  else { visibleData.push({ time: t, open: baseC.open, high: baseC.high, low: baseC.low, close: baseC.close }); candleSeries.update(visibleData[visibleData.length-1]); }
+  
+  if (last.time === t) { 
+    last.high = Math.max(last.high, baseC.high); last.low = Math.min(last.low, baseC.low); last.close = baseC.close; 
+    last.ticks += baseC.ticks;
+    candleSeries.update(last); 
+  } else { 
+    visibleData.push({ time: t, open: baseC.open, high: baseC.high, low: baseC.low, close: baseC.close, ticks: baseC.ticks }); 
+    candleSeries.update(visibleData[visibleData.length-1]); 
+  }
+  
+  if(isMaVisible) updateMA();
+  if(isVolumeVisible) updateVolumeData();
+  
   document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
   chart.timeScale().scrollToRealTime(); 
   return true;
 }
 
-// ====== PA機能 ======
 function triggerPAMode(sc) {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = true; activePaSc = sc;
   document.getElementById('fab-controls').style.display = 'none';
@@ -1053,7 +1304,6 @@ function endSim(title, pips) {
     const currentDD = ftkPeakPnl - ftkPnlPips;
     
     let ftkStatus = `<br><span style="color:var(--prop-color);">🏆 Fintokei 累計: ${ftkPnlPips>0?'+':''}${ftkPnlPips.toFixed(1)} pips</span>`;
-    
     const alertDiv = document.getElementById('fintokei-alert');
     alertDiv.style.display = 'block';
     
@@ -1082,22 +1332,27 @@ function endSim(title, pips) {
   updateTopStatsUI();
 }
 
-// ====== 成績・統計・期間フィルタ ======
+function reviewChart() {
+  document.getElementById('modal-result').style.display = 'none';
+  const fab = document.getElementById('fab-controls');
+  // 振り返り後の導線（「次のチャートへ」ボタン）を表示
+  fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
+  fab.style.display = 'flex';
+}
+
+// ====== 成績・統計 ======
 function recordResult(isEntry, isWin, pips) {
   const records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
   records.push({entry: isEntry, win: isWin, pips: pips, ts: Date.now()}); 
   localStorage.setItem('trade_stats_mobile_v1', JSON.stringify(records));
 }
-
 function getStatsData(period = 'all') {
   let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
   if (period !== 'all') {
     const now = Date.now();
-    const msInDay = 24 * 60 * 60 * 1000;
-    const limit = period === '7d' ? 7 * msInDay : 30 * msInDay;
+    const limit = period === '7d' ? 7 * 86400000 : 30 * 86400000;
     records = records.filter(r => (now - r.ts) <= limit);
   }
-
   if(records.length===0) return { winRate: 0, gain: 0, loss: 0, rr: 0, ev: 0 };
   
   const entries = records.filter(r=>r.entry); const wins = entries.filter(r=>r.win);
@@ -1108,21 +1363,17 @@ function getStatsData(period = 'all') {
   
   const rr = grossLoss>0 ? (grossWin/wins.length / (grossLoss/(entries.length-wins.length))) : (wins.length>0 ? 99.9 : 0);
   const ev = entries.length>0 ? (grossWin - grossLoss) / entries.length : 0;
-
   return { winRate, gain: grossWin, loss: grossLoss, rr, ev };
 }
-
 function updateTopStatsUI(period = 'all') {
   const stats = getStatsData(period);
-  
   document.getElementById('top-st-win').innerText = stats.winRate.toFixed(1)+'%';
   document.getElementById('top-st-gain').innerText = stats.gain.toFixed(1);
   document.getElementById('top-st-loss').innerText = stats.loss.toFixed(1);
   document.getElementById('top-st-rr').innerText = stats.rr.toFixed(2);
   
-  const periodText = period === '7d' ? '直近 7日間' : period === '30d' ? '直近 30日間' : '全期間';
   const lbl = document.getElementById('top-stats-period-lbl');
-  if(lbl) lbl.innerText = periodText;
+  if(lbl) lbl.innerText = period === '7d' ? '直近 7日間' : period === '30d' ? '直近 30日間' : '全期間';
 
   document.getElementById('mod-st-win').innerText = stats.winRate.toFixed(1)+'%';
   document.getElementById('mod-st-gain').innerText = stats.gain.toFixed(1);
@@ -1132,21 +1383,9 @@ function updateTopStatsUI(period = 'all') {
   evEl.innerText = (stats.ev > 0 ? '+' : '') + stats.ev.toFixed(2);
   evEl.style.color = stats.ev >= 0 ? 'var(--accent)' : 'var(--red)';
 }
+function openTopStatsModal() { document.getElementById('modal-top-stats').style.display = 'flex'; document.getElementById('stats-period-sel').value = 'all'; updateTopStatsUI('all'); }
+function resetStats() { if(confirm('全てのトレード記録を完全に削除しますか？\n（この操作は取り消せません）')) { localStorage.removeItem('trade_stats_mobile_v1'); updateTopStatsUI('all'); } }
 
-function openTopStatsModal() {
-  document.getElementById('modal-top-stats').style.display = 'flex';
-  document.getElementById('stats-period-sel').value = 'all'; 
-  updateTopStatsUI('all');
-}
-
-function resetStats() { 
-  if(confirm('全てのトレード記録を完全に削除しますか？\n（この操作は取り消せません）')) { 
-    localStorage.removeItem('trade_stats_mobile_v1'); 
-    updateTopStatsUI('all');
-  } 
-}
-
-// ====== Discord ======
 async function executeSubmitDiscord(btn) {
   const name = document.getElementById('submit-username').value; const memo = document.getElementById('submit-memo').value;
   btn.innerText="送信中..."; btn.disabled=true;
