@@ -29,9 +29,11 @@ document.addEventListener('lwc-ready', _onLwcReady);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
+  /* スマホブラウザのUI被りを防ぐため dvh を使用 */
+  html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
   input, textarea, select { user-select: auto; font-family: inherit; }
 
+  /* 汎用UI */
   .btn { width:100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 14px; border: 1px solid var(--border); background: var(--bg-hover); color: var(--text); text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #000; border: none; }
@@ -41,27 +43,24 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .input-field { width: 100%; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 10px; }
   .input-field:focus { border-color: var(--accent); }
 
-  .full-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; }
+  /* オーバーレイ系 */
+  .full-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; height: 100dvh; }
   #login-overlay { background: rgba(14,15,17,0.98); align-items: center; justify-content: center; }
   .login-box { background: var(--bg-panel); border: 1px solid var(--accent); padding: 30px 20px; border-radius: 16px; width: 100%; max-width: 360px; text-align: center; }
   
   /* TOP画面 */
   #top-screen { display: none; padding-bottom: 40px; }
-  .top-header { text-align: center; margin: 20px 0 30px; }
-  .top-title { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 900; }
+  .top-header { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
+  .top-title { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 900; }
   .top-title span { color: var(--accent); }
+  
   .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: left; cursor: pointer; }
   .mode-card:active { background: var(--bg-hover); }
   .mode-card h3 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
   .mode-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
   
-  /* トップ成績パネル（タップ可能） */
-  .top-stats-card { background: rgba(200,241,53,0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 24px; cursor: pointer; position: relative; overflow: hidden; }
-  .top-stats-card:active { background: rgba(200,241,53,0.1); }
-  .top-stats-card::after { content: 'タップして詳細・期間絞り込み ＞'; position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 10px; background: var(--accent); color: #000; font-weight: bold; padding: 2px 0; }
-
   /* メインアプリ領域 */
-  #app-screen { display: none; flex-direction: column; height: 100%; }
+  #app-screen { display: none; flex-direction: column; height: 100dvh; }
   
   header { height: var(--header-height); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; z-index: 10; flex-shrink: 0; }
   .mode-badge { font-size: 11px; padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-weight: bold; color: var(--accent); }
@@ -69,7 +68,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   
   main { position: relative; flex: 1; width: 100%; background: var(--bg); overflow: hidden; }
   #chart-container { width: 100%; height: 100%; position: absolute; inset: 0; }
-  /* pointer-eventsはJSで動的に切り替えるため初期値はnone */
   #canvas-overlay { position: absolute; inset: 0; z-index: 10; touch-action: none; pointer-events: none; }
   
   .info-bar { position: absolute; top: 10px; left: 10px; z-index: 5; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); display:flex; flex-direction:column; gap:4px; pointer-events:none; }
@@ -86,10 +84,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 80; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
   .backdrop.show { opacity: 1; pointer-events: auto; }
-  .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85vh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 90; padding: 16px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
+  .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 90; padding: 16px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
   .bottom-sheet.open { transform: translateY(0); }
-  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; }
-  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color:var(--text); }
+  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
+  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color:var(--text); flex-shrink: 0; }
   
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text); }
@@ -104,8 +102,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .sc-card.skip { border-left: 4px solid var(--text-muted); }
   .sc-val { font-family: 'DM Mono', monospace; font-weight: bold; }
   
-  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(2px); }
-  .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 400px; padding: 24px; text-align: center; max-height: 90vh; overflow-y: auto; }
+  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(2px); height: 100dvh; }
+  .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 400px; padding: 24px; text-align: center; max-height: 90dvh; overflow-y: auto; }
   .res-title { font-size: 24px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 10px; }
 
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -117,27 +115,25 @@ document.addEventListener('lwc-ready', _onLwcReady);
      横画面 (Landscape) の最適化
      ========================================== */
   @media (orientation: landscape) {
-    :root {
-      --header-height: 44px;
-      --nav-height: 50px;
-    }
-    .top-header { margin: 10px 0 15px; }
-    .top-title { font-size: 24px; }
+    :root { --header-height: 44px; --nav-height: 50px; }
     
-    /* TOP画面を2カラムに */
+    .top-header { margin: 5px 0 10px; }
+    .top-title { font-size: 24px; }
     .top-content-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-start; }
     
-    /* ツールボタンの縮小と列数増加 */
+    /* 横画面はツールを8列にして高さを節約 */
     .tool-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; }
-    .tool-btn { font-size: 18px; }
+    .tool-btn { font-size: 18px; aspect-ratio: auto; height: 44px; }
+    .palette { padding: 6px; }
+    .color-btn { width: 24px; height: 24px; }
     
-    /* ボトムシートの余白削減 */
-    .bottom-sheet { padding: 12px; max-height: 95vh; gap: 10px; }
+    /* ボトムシートのスクロール対応 */
+    .bottom-sheet { padding: 12px; max-height: 100dvh; border-radius: 0; gap: 10px; }
     .sheet-title { font-size: 14px; margin-bottom: 5px; }
     
-    /* FABコントロール縮小 */
-    #fab-controls { bottom: 10px; padding: 4px 16px; }
+    #fab-controls { bottom: 5px; padding: 4px 16px; }
     .fab-btn { font-size: 16px; }
+    .info-bar { flex-direction: row; gap: 15px; }
   }
 </style>
 </head>
@@ -155,8 +151,11 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
 <div id="top-screen" class="full-overlay">
   <div class="top-header">
-    <div class="top-title">SIMULATOR <span>PRO</span></div>
-    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Mobile Edition</div>
+    <div>
+      <div class="top-title">SIMULATOR <span>PRO</span></div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Mobile Edition</div>
+    </div>
+    <button class="btn" style="width:auto; padding:8px 12px; border:1px solid var(--border);" onclick="toggleFullScreen()">🔲 全画面</button>
   </div>
 
   <div class="top-content-wrapper">
@@ -169,17 +168,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
         </select>
       </div>
 
-      <div class="top-stats-card" onclick="openTopStatsModal()">
-        <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px; display:flex; justify-content:space-between;">
-          <span>📊 あなたの成績</span>
-          <span style="color:var(--accent);" id="top-stats-period-lbl">全期間</span>
-        </div>
-        <div class="stat-grid" id="top-stat-grid" style="margin-bottom: 8px;">
-          <div class="stat-box" style="padding:8px;"><div class="stat-val" id="top-st-win">0%</div><div class="stat-lbl">勝率</div></div>
-          <div class="stat-box" style="padding:8px;"><div class="stat-val" id="top-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
-          <div class="stat-box" style="padding:8px;"><div class="stat-val" style="color:var(--green);" id="top-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
-          <div class="stat-box" style="padding:8px;"><div class="stat-val" style="color:var(--red);" id="top-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
-        </div>
+      <div style="margin-bottom:24px;">
+        <button class="btn" style="background:rgba(200,241,53,0.05); border-color:var(--accent); color:var(--accent);" onclick="openTopStatsModal()">📊 成績サマリーを見る</button>
       </div>
     </div>
 
@@ -208,7 +198,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div id="active-symbol-badge" style="font-weight:bold; font-size:14px; margin-left:8px;">BTC/USD</div>
     </div>
     <div style="display:flex; gap:10px; align-items:center;">
-      <button class="btn" style="padding:4px 10px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
+      <button class="btn" style="padding:4px 8px; width:auto; border:none; background:transparent; font-size:16px;" onclick="toggleFullScreen()">🔲</button>
+      <button class="btn" style="padding:4px 8px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
         <option value="15m">15m</option>
         <option value="1h">1H</option>
@@ -314,7 +305,9 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <button class="nav-item" onclick="toggleSheet('sheet-scenario', this)"><span class="nav-icon">🎯</span><span>Plan</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-menu', this)"><span class="nav-icon">⚙️</span><span>Menu</span></button>
   </nav>
-</div> <div class="center-modal" id="modal-top-stats">
+</div>
+
+<div class="center-modal" id="modal-top-stats">
   <div class="modal-content">
     <h3 style="font-size:16px; margin-bottom:16px;">📈 成績詳細フィルター</h3>
     <select id="stats-period-sel" class="input-field" onchange="updateTopStatsUI(this.value)">
@@ -377,7 +370,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
 <script>
 // ==========================================
-// グローバル変数・初期化
+// グローバル設定 & ユーティリティ
 // ==========================================
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyGdKt-Ddr4ik2cUWhM4uD0zCLTxbGqms6zjw1oe7R-eIjNV95sqxS237h_YNWCuqFkiA/exec';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1490242841719341107/k2g74ANpOtDxVyvEX9gLck9FHgQztc777H4oq7qH189qf-rHhC4CzVxeQYN1_SWHsXbb';
@@ -392,7 +385,6 @@ let activeSymbol = 'BTCUSDT';
 let appMode = 'free';
 let chartMarkers = [];
 
-// 描画関連
 const canvas = document.getElementById('canvas-overlay');
 let ctx = canvas.getContext('2d');
 let currentTool = 'cursor';
@@ -401,14 +393,24 @@ let shapes = [], currentShape = null;
 let isDrawing = false;
 let canvasW = 0, canvasH = 0;
 
-// シナリオ・PA関連
 let scenarios = [], activePos = null;
 let scBuilder = { active: false, type: null, step: 0, entry: null, tp: null, sl: null, mouseX: 0, mouseY: 0 };
 let isPaMode = false, activePaSc = null;
 
+// 全画面API
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn(`Fullscreen not supported: ${err.message}`);
+    });
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
 function _startInit() { 
-  // 開発中スキップ用（本番は消す）
+  // 開発時スキップ用
   // document.getElementById('login-overlay').style.display = 'none';
   // document.getElementById('top-screen').style.display = 'flex';
   // updateTopStatsUI();
@@ -455,6 +457,7 @@ function initChartSystem() {
 
   candleSeries = chart.addCandlestickSeries({ upColor: '#4ade80', downColor: '#f87171', borderVisible: false, wickUpColor: '#4ade80', wickDownColor: '#f87171' });
 
+  // ★ リサイズ時のキャンバス再計算・再描画を確実に実行
   new ResizeObserver(entries => {
     if (entries.length === 0 || entries[0].target !== container) return;
     const newRect = entries[0].contentRect;
@@ -482,21 +485,23 @@ function startGame(mode, isRefresh=false) {
   
   const badge = document.getElementById('mode-badge');
   if(mode==='free') badge.innerText='FREE'; else if(mode==='practice10') badge.innerText='DRILL'; else badge.innerText='IRONMAN';
-  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; // XAU/USD 等のみ
+  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
   
   document.getElementById('top-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
   closeAllSheets();
   
   if(!isRefresh && chart) {
-    chart.applyOptions({ width: document.getElementById('chart-container').clientWidth, height: document.getElementById('chart-container').clientHeight });
-    resizeCanvas(document.getElementById('chart-container').clientWidth, document.getElementById('chart-container').clientHeight);
+    const w = document.getElementById('chart-container').clientWidth;
+    const h = document.getElementById('chart-container').clientHeight;
+    chart.applyOptions({ width: w, height: h });
+    resizeCanvas(w, h);
   }
   
   loadNewProblem();
 }
 
-// ====== UI Sheet 制御 ======
+// ====== UI Sheet ======
 let currentActiveSheet = null;
 function toggleSheet(sheetId, btnElement) {
   const sheet = document.getElementById(sheetId);
@@ -517,7 +522,7 @@ function switchTab(tab, btnElement) {
   if(btnElement) btnElement.classList.add('active');
 }
 
-// ====== データ取得・MTF ======
+// ====== データ取得 ======
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-controls').style.display = 'none';
@@ -556,11 +561,16 @@ function aggregateData(baseArr, tfStr, maxIndex) {
   if(cur) res.push(cur); return res;
 }
 
-// ====== Canvas描画 (Pointer Events対応) ======
+// ====== Canvas & タッチ ======
 function resizeCanvas(w, h) {
-  const ratio = window.devicePixelRatio || 1; canvasW = w; canvasH = h;
-  canvas.width = w * ratio; canvas.height = h * ratio;
+  const ratio = window.devicePixelRatio || 1; 
+  canvasW = w; canvasH = h;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width = w * ratio; 
+  canvas.height = h * ratio;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  syncCanvas(); // 即座に再描画
 }
 function getChartCoordinates(clientX, clientY) {
   const rect = document.getElementById('chart-container').getBoundingClientRect();
@@ -570,17 +580,12 @@ function getChartCoordinates(clientX, clientY) {
 }
 
 function setupPointerEvents() {
-  // PointerEventを使用してスマホのタップ・スワイプの競合を防ぐ
   const handleDown = (e) => {
     if (currentTool === 'cursor' && !scBuilder.active) return;
-    // LWCのスクロールを止める
     e.preventDefault(); 
     const coord = getChartCoordinates(e.clientX, e.clientY);
     
-    if (scBuilder.active) { 
-      handleScenarioClick(coord); 
-      return; 
-    }
+    if (scBuilder.active) { handleScenarioClick(coord); return; }
     
     isDrawing = true;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
@@ -620,8 +625,6 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      
-      // Cursor以外の時は Canvas が入力を受け取る
       canvas.style.pointerEvents = currentTool !== 'cursor' ? 'auto' : 'none';
       chart.applyOptions({ handleScroll: currentTool === 'cursor', handleScale: currentTool === 'cursor' });
       closeAllSheets();
@@ -648,7 +651,13 @@ function syncCanvas() {
     
     if(s.type === 'trendline' && x2!=null) { ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
     else if(s.type === 'hline') { ctx.moveTo(0,y1); ctx.lineTo(canvasW,y1); ctx.stroke(); }
-    else if(s.type === 'zone' && x2!=null) { ctx.fillStyle=s.color+'40'; ctx.fillRect(Math.min(x1,x2), Math.min(y1,y2), Math.abs(x2-x1), Math.abs(y2-y1)); }
+    else if(s.type === 'zone' && x2!=null) { 
+      // fillRectのRGBA処理を改善
+      ctx.fillStyle = s.color; 
+      ctx.globalAlpha = 0.25; 
+      ctx.fillRect(Math.min(x1,x2), Math.min(y1,y2), Math.abs(x2-x1), Math.abs(y2-y1)); 
+      ctx.globalAlpha = 1.0;
+    }
     else if(s.type === 'pen') { s.points.forEach((p,i)=>{ const px=chart.timeScale().logicalToCoordinate(logicalFromTime(p.time)); const py=candleSeries.priceToCoordinate(p.price); if(px!=null && py!=null) { if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); } }); ctx.stroke(); }
   });
 
@@ -671,9 +680,7 @@ function drawPositionTool(type, entry, tp, sl, isPreview, expireTime) {
 }
 function drawBuilderPreview() {
   if(scBuilder.priceHover==null) return;
-  // クロスヘア（指の位置目安）
   ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
-  
   const hov = {price: scBuilder.priceHover, time: scBuilder.timeHover};
   if(scBuilder.step===1) drawPositionTool(scBuilder.type, scBuilder.entry, null, hov, true);
   else if(scBuilder.step===2) drawPositionTool(scBuilder.type, scBuilder.entry, hov, scBuilder.sl, true);
@@ -698,7 +705,7 @@ function startScenarioBuilder(type) {
   scBuilder = { active: true, type: type, step: 0 };
   if(type === 'skip') { openReasonModal('skip'); } 
   else { 
-    canvas.style.pointerEvents = 'auto'; // キャンバスをタップ可能にする
+    canvas.style.pointerEvents = 'auto'; 
     chart.applyOptions({ handleScroll: false, handleScale: false }); 
     showGuide("👆 1. エントリー価格をタップ"); 
   }
@@ -916,7 +923,6 @@ function endSim(title, pips) {
   m.style.display = 'flex';
   
   if(pips!=null) recordResult(true, pips>0, pips); else if(scenarios.some(s=>s.type==='skip')) recordResult(false, false, 0);
-  // トップ画面の裏で成績が更新されるように呼ぶ
   updateTopStatsUI();
 }
 
@@ -930,7 +936,6 @@ function recordResult(isEntry, isWin, pips) {
 function getStatsData(period = 'all') {
   let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
   
-  // 期間ソート
   if (period !== 'all') {
     const now = Date.now();
     const msInDay = 24 * 60 * 60 * 1000;
@@ -952,22 +957,18 @@ function getStatsData(period = 'all') {
   return { winRate, gain: grossWin, loss: grossLoss, rr, ev };
 }
 
-// TOP画面の成績サマリー
 function updateTopStatsUI(period = 'all') {
   const stats = getStatsData(period);
   
-  // TOP画面（要約版）
   document.getElementById('top-st-win').innerText = stats.winRate.toFixed(1)+'%';
   document.getElementById('top-st-gain').innerText = stats.gain.toFixed(1);
   document.getElementById('top-st-loss').innerText = stats.loss.toFixed(1);
   document.getElementById('top-st-rr').innerText = stats.rr.toFixed(2);
   
-  // ラベル更新
   const periodText = period === '7d' ? '直近 7日間' : period === '30d' ? '直近 30日間' : '全期間';
   const lbl = document.getElementById('top-stats-period-lbl');
   if(lbl) lbl.innerText = periodText;
 
-  // モーダル内詳細
   document.getElementById('mod-st-win').innerText = stats.winRate.toFixed(1)+'%';
   document.getElementById('mod-st-gain').innerText = stats.gain.toFixed(1);
   document.getElementById('mod-st-loss').innerText = stats.loss.toFixed(1);
@@ -979,7 +980,7 @@ function updateTopStatsUI(period = 'all') {
 
 function openTopStatsModal() {
   document.getElementById('modal-top-stats').style.display = 'flex';
-  document.getElementById('stats-period-sel').value = 'all'; // 初期化
+  document.getElementById('stats-period-sel').value = 'all'; 
   updateTopStatsUI('all');
 }
 
