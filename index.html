@@ -32,7 +32,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
   input, textarea, select { user-select: auto; font-family: inherit; }
 
-  /* 汎用UI */
   .btn { width:100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 14px; border: 1px solid var(--border); background: var(--bg-hover); color: var(--text); text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #000; border: none; }
@@ -42,7 +41,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .input-field { width: 100%; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 10px; }
   .input-field:focus { border-color: var(--accent); }
 
-  /* オーバーレイ系 */
   .full-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; }
   #login-overlay { background: rgba(14,15,17,0.98); align-items: center; justify-content: center; }
   .login-box { background: var(--bg-panel); border: 1px solid var(--accent); padding: 30px 20px; border-radius: 16px; width: 100%; max-width: 360px; text-align: center; }
@@ -52,38 +50,40 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .top-header { text-align: center; margin: 20px 0 30px; }
   .top-title { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 900; }
   .top-title span { color: var(--accent); }
-  .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: left; }
+  .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: left; cursor: pointer; }
+  .mode-card:active { background: var(--bg-hover); }
   .mode-card h3 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
   .mode-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
   
+  /* トップ成績パネル（タップ可能） */
+  .top-stats-card { background: rgba(200,241,53,0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 24px; cursor: pointer; position: relative; overflow: hidden; }
+  .top-stats-card:active { background: rgba(200,241,53,0.1); }
+  .top-stats-card::after { content: 'タップして詳細・期間絞り込み ＞'; position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 10px; background: var(--accent); color: #000; font-weight: bold; padding: 2px 0; }
+
   /* メインアプリ領域 */
   #app-screen { display: none; flex-direction: column; height: 100%; }
   
-  /* ヘッダー */
   header { height: var(--header-height); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; z-index: 10; flex-shrink: 0; }
   .mode-badge { font-size: 11px; padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-weight: bold; color: var(--accent); }
   .tf-select { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-family: 'DM Mono'; font-size:14px; }
   
-  /* チャートエリア */
   main { position: relative; flex: 1; width: 100%; background: var(--bg); overflow: hidden; }
   #chart-container { width: 100%; height: 100%; position: absolute; inset: 0; }
+  /* pointer-eventsはJSで動的に切り替えるため初期値はnone */
   #canvas-overlay { position: absolute; inset: 0; z-index: 10; touch-action: none; pointer-events: none; }
   
   .info-bar { position: absolute; top: 10px; left: 10px; z-index: 5; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); display:flex; flex-direction:column; gap:4px; pointer-events:none; }
-  #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
-  /* PA確認・再生コントローラー */
   #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 12px 16px; border-radius: 20px; display: none; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 340px; }
   #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
   .fab-btn { background: transparent; border: none; color: var(--text); font-size: 20px; padding: 4px; cursor: pointer; }
   
-  /* ボトムナビ */
   .bottom-nav { height: var(--nav-height); background: var(--bg-panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
   .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px; gap: 4px; background: transparent; border: none; }
   .nav-item.active { color: var(--accent); }
   .nav-icon { font-size: 20px; }
 
-  /* ボトムシート */
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 80; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
   .backdrop.show { opacity: 1; pointer-events: auto; }
   .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85vh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 90; padding: 16px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
@@ -91,7 +91,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; }
   .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color:var(--text); }
   
-  /* ツール＆パレット */
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text); }
   .tool-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.1); }
@@ -99,23 +98,47 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; }
   .color-btn.active { border-color: #fff; box-shadow: 0 0 0 2px var(--bg-panel); }
   
-  /* シナリオカード */
   .sc-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 12px; }
   .sc-card.long { border-left: 4px solid var(--green); }
   .sc-card.short { border-left: 4px solid var(--red); }
   .sc-card.skip { border-left: 4px solid var(--text-muted); }
   .sc-val { font-family: 'DM Mono', monospace; font-weight: bold; }
   
-  /* モーダル群 */
-  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; }
+  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(2px); }
   .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 400px; padding: 24px; text-align: center; max-height: 90vh; overflow-y: auto; }
   .res-title { font-size: 24px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 10px; }
 
-  /* 統計グリッド */
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-box { background: var(--bg-panel); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
   .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono'; }
   .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ==========================================
+     横画面 (Landscape) の最適化
+     ========================================== */
+  @media (orientation: landscape) {
+    :root {
+      --header-height: 44px;
+      --nav-height: 50px;
+    }
+    .top-header { margin: 10px 0 15px; }
+    .top-title { font-size: 24px; }
+    
+    /* TOP画面を2カラムに */
+    .top-content-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-start; }
+    
+    /* ツールボタンの縮小と列数増加 */
+    .tool-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; }
+    .tool-btn { font-size: 18px; }
+    
+    /* ボトムシートの余白削減 */
+    .bottom-sheet { padding: 12px; max-height: 95vh; gap: 10px; }
+    .sheet-title { font-size: 14px; margin-bottom: 5px; }
+    
+    /* FABコントロール縮小 */
+    #fab-controls { bottom: 10px; padding: 4px 16px; }
+    .fab-btn { font-size: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -136,36 +159,45 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Mobile Edition</div>
   </div>
 
-  <div style="margin-bottom:20px;">
-    <label style="font-size:12px; color:var(--text-muted);">通貨ペア選択</label>
-    <select id="top-symbol-sel" class="input-field" style="margin-top:6px; font-family:'DM Mono';">
-      <option value="PAXGUSDT">XAU/USD (Gold)</option>
-      <option value="BTCUSDT" selected>BTC/USD (Bitcoin)</option>
-    </select>
-  </div>
+  <div class="top-content-wrapper">
+    <div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:var(--text-muted);">通貨ペア選択</label>
+        <select id="top-symbol-sel" class="input-field" style="margin-top:6px; font-family:'DM Mono';">
+          <option value="PAXGUSDT">XAU/USD (Gold)</option>
+          <option value="BTCUSDT" selected>BTC/USD (Bitcoin)</option>
+        </select>
+      </div>
 
-  <div style="margin-bottom:20px;">
-    <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">📊 現在の成績</div>
-    <div class="stat-grid" id="top-stat-grid">
-      <div class="stat-box"><div class="stat-val" id="top-st-win">0%</div><div class="stat-lbl">勝率</div></div>
-      <div class="stat-box"><div class="stat-val" id="top-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
-      <div class="stat-box"><div class="stat-val" style="color:var(--green);" id="top-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
-      <div class="stat-box"><div class="stat-val" style="color:var(--red);" id="top-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
+      <div class="top-stats-card" onclick="openTopStatsModal()">
+        <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px; display:flex; justify-content:space-between;">
+          <span>📊 あなたの成績</span>
+          <span style="color:var(--accent);" id="top-stats-period-lbl">全期間</span>
+        </div>
+        <div class="stat-grid" id="top-stat-grid" style="margin-bottom: 8px;">
+          <div class="stat-box" style="padding:8px;"><div class="stat-val" id="top-st-win">0%</div><div class="stat-lbl">勝率</div></div>
+          <div class="stat-box" style="padding:8px;"><div class="stat-val" id="top-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
+          <div class="stat-box" style="padding:8px;"><div class="stat-val" style="color:var(--green);" id="top-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
+          <div class="stat-box" style="padding:8px;"><div class="stat-val" style="color:var(--red);" id="top-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">🎮 モード選択</div>
-  <div class="mode-card" onclick="startGame('free')" style="border-left:4px solid var(--green);">
-    <h3 style="color:var(--green);">🟢 フリー・トレーニング</h3>
-    <p>無制限・やり直し可能。じっくり相場観を養う基本モード。</p>
-  </div>
-  <div class="mode-card" onclick="startGame('practice10')" style="border-left:4px solid #fbbf24;">
-    <h3 style="color:#fbbf24;">🟡 タクティカル・ドリル (10回)</h3>
-    <p>10回連続。短期集中で判断力を鍛える。</p>
-  </div>
-  <div class="mode-card" onclick="startGame('challenge100')" style="border-left:4px solid var(--red);">
-    <h3 style="color:var(--red);">🔴 アイアンマン (100回)</h3>
-    <p>真の実力が試される過酷な100本ノック。</p>
+    <div>
+      <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">🎮 モード選択</div>
+      <div class="mode-card" onclick="startGame('free')" style="border-left:4px solid var(--green);">
+        <h3 style="color:var(--green);">🟢 フリー・トレーニング</h3>
+        <p>無制限・やり直し可能。じっくり相場観を養う基本モード。</p>
+      </div>
+      <div class="mode-card" onclick="startGame('practice10')" style="border-left:4px solid #fbbf24;">
+        <h3 style="color:#fbbf24;">🟡 タクティカル・ドリル (10回)</h3>
+        <p>10回連続。短期集中で判断力を鍛える。</p>
+      </div>
+      <div class="mode-card" onclick="startGame('challenge100')" style="border-left:4px solid var(--red);">
+        <h3 style="color:var(--red);">🔴 アイアンマン (100回)</h3>
+        <p>真の実力が試される過酷な100本ノック。</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -173,10 +205,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
   <header>
     <div class="header-left">
       <div class="mode-badge" id="mode-badge">FREE</div>
-      <div id="active-symbol-badge" style="font-weight:bold; font-size:14px;">BTC/USD</div>
+      <div id="active-symbol-badge" style="font-weight:bold; font-size:14px; margin-left:8px;">BTC/USD</div>
     </div>
     <div style="display:flex; gap:10px; align-items:center;">
-      <button class="btn" style="padding:6px 12px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
+      <button class="btn" style="padding:4px 10px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
         <option value="15m">15m</option>
         <option value="1h">1H</option>
@@ -282,7 +314,31 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <button class="nav-item" onclick="toggleSheet('sheet-scenario', this)"><span class="nav-icon">🎯</span><span>Plan</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-menu', this)"><span class="nav-icon">⚙️</span><span>Menu</span></button>
   </nav>
-</div> <div class="center-modal" id="modal-reason">
+</div> <div class="center-modal" id="modal-top-stats">
+  <div class="modal-content">
+    <h3 style="font-size:16px; margin-bottom:16px;">📈 成績詳細フィルター</h3>
+    <select id="stats-period-sel" class="input-field" onchange="updateTopStatsUI(this.value)">
+      <option value="all">全期間</option>
+      <option value="7d">直近 7日間</option>
+      <option value="30d">直近 30日間</option>
+    </select>
+    
+    <div class="stat-grid" id="modal-stat-grid" style="margin: 16px 0;">
+      <div class="stat-box"><div class="stat-val" id="mod-st-win">0%</div><div class="stat-lbl">勝率</div></div>
+      <div class="stat-box"><div class="stat-val" id="mod-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--green);" id="mod-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--red);" id="mod-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
+      <div class="stat-box" style="grid-column:span 2;"><div class="stat-val" id="mod-st-ev">0.0</div><div class="stat-lbl">期待値 (pips/回)</div></div>
+    </div>
+    
+    <div style="display:flex; gap:10px;">
+      <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="resetStats()">🗑 全データ削除</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-top-stats').style.display='none';">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="center-modal" id="modal-reason">
   <div class="modal-content">
     <h3 id="rm-title" style="font-size:16px; margin-bottom:16px;">シナリオの根拠</h3>
     <div id="rm-reasons" style="display:flex; flex-direction:column; gap:10px; text-align:left; font-size:14px; margin-bottom:16px;">
@@ -304,9 +360,17 @@ document.addEventListener('lwc-ready', _onLwcReady);
   <div class="modal-content">
     <div class="res-title" id="res-title"></div>
     <div id="res-desc" style="font-size:14px; color:var(--text-muted); margin-bottom:20px;"></div>
+    
+    <div style="background:rgba(96,165,250,0.1); border:1px solid var(--blue); padding:16px; border-radius:12px; margin-bottom:20px;">
+      <div style="font-size:12px; color:var(--blue); font-weight:bold; margin-bottom:8px;">📝 Discordへ振り返り送信</div>
+      <input type="text" id="submit-username" class="input-field" placeholder="名前" readonly style="color:var(--accent);">
+      <textarea id="submit-memo" class="input-field" rows="2" placeholder="気づき・反省点"></textarea>
+      <button class="btn" style="background:var(--blue); color:#fff; border:none;" onclick="executeSubmitDiscord(this)">📤 送信する</button>
+    </div>
+
     <div style="display:flex; gap:10px; flex-direction:column;">
       <button class="btn btn-primary" onclick="nextProblem()">⏭ 次のチャートへ</button>
-      <button class="btn" onclick="document.getElementById('modal-result').style.display='none';">🔍 チャートを振り返る</button>
+      <button class="btn" onclick="document.getElementById('modal-result').style.display='none';">🔍 閉じてチャートを確認</button>
     </div>
   </div>
 </div>
@@ -316,6 +380,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
 // グローバル変数・初期化
 // ==========================================
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyGdKt-Ddr4ik2cUWhM4uD0zCLTxbGqms6zjw1oe7R-eIjNV95sqxS237h_YNWCuqFkiA/exec';
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1490242841719341107/k2g74ANpOtDxVyvEX9gLck9FHgQztc777H4oq7qH189qf-rHhC4CzVxeQYN1_SWHsXbb';
 let currentSalonUserName = "";
 
 let chart, candleSeries;
@@ -341,10 +406,9 @@ let scenarios = [], activePos = null;
 let scBuilder = { active: false, type: null, step: 0, entry: null, tp: null, sl: null, mouseX: 0, mouseY: 0 };
 let isPaMode = false, activePaSc = null;
 
-// LWCロード待機
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
 function _startInit() { 
-  // 開発中はログインをスキップしたい場合は以下を利用
+  // 開発中スキップ用（本番は消す）
   // document.getElementById('login-overlay').style.display = 'none';
   // document.getElementById('top-screen').style.display = 'flex';
   // updateTopStatsUI();
@@ -365,6 +429,7 @@ async function attemptLogin() {
       currentSalonUserName = data.name;
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('top-screen').style.display = 'flex';
+      document.getElementById('submit-username').value = currentSalonUserName + " さん";
       updateTopStatsUI();
       initChartSystem();
     } else {
@@ -398,18 +463,8 @@ function initChartSystem() {
     resizeCanvas(newRect.width, newRect.height);
   }).observe(container);
 
-  chart.subscribeCrosshairMove(param => {
-    if (!param.point) return;
-    if (scBuilder.active) {
-      scBuilder.mouseX = param.point.x; scBuilder.mouseY = param.point.y;
-      scBuilder.priceHover = candleSeries.coordinateToPrice(param.point.y);
-      const logical = chart.timeScale().coordinateToLogical(param.point.x);
-      scBuilder.timeHover = calcTimeFromLogical(logical);
-    }
-  });
-
   setupTools();
-  setupTouchEvents();
+  setupPointerEvents();
   startRenderLoop();
 }
 
@@ -427,7 +482,7 @@ function startGame(mode, isRefresh=false) {
   
   const badge = document.getElementById('mode-badge');
   if(mode==='free') badge.innerText='FREE'; else if(mode==='practice10') badge.innerText='DRILL'; else badge.innerText='IRONMAN';
-  document.getElementById('active-symbol-badge').innerText = displaySym;
+  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; // XAU/USD 等のみ
   
   document.getElementById('top-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
@@ -479,7 +534,7 @@ async function loadNewProblem() {
     initialIndex = currentIndex;
     applyTimeframe();
     document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
-  } catch (err) { alert("データ取得に失敗しました。時間をおいて再読込してください: " + err.message); }
+  } catch (err) { alert("データ取得に失敗しました: " + err.message); }
 }
 
 function changeTimeframe() { currentTF = document.getElementById('tf-sel').value; applyTimeframe(); }
@@ -501,7 +556,7 @@ function aggregateData(baseArr, tfStr, maxIndex) {
   if(cur) res.push(cur); return res;
 }
 
-// ====== Canvas描画 (修正版タッチ対応) ======
+// ====== Canvas描画 (Pointer Events対応) ======
 function resizeCanvas(w, h) {
   const ratio = window.devicePixelRatio || 1; canvasW = w; canvasH = h;
   canvas.width = w * ratio; canvas.height = h * ratio;
@@ -514,44 +569,50 @@ function getChartCoordinates(clientX, clientY) {
   return { x, y, logical, time: calcTimeFromLogical(logical), price: candleSeries.coordinateToPrice(y) };
 }
 
-function setupTouchEvents() {
-  const handleStart = (e) => {
-    if(currentTool === 'cursor' && !scBuilder.active) return;
+function setupPointerEvents() {
+  // PointerEventを使用してスマホのタップ・スワイプの競合を防ぐ
+  const handleDown = (e) => {
+    if (currentTool === 'cursor' && !scBuilder.active) return;
+    // LWCのスクロールを止める
     e.preventDefault(); 
-    const touch = e.touches ? e.touches[0] : e;
-    const coord = getChartCoordinates(touch.clientX, touch.clientY);
+    const coord = getChartCoordinates(e.clientX, e.clientY);
     
-    // シナリオ作成時は「タップ」でポイントを打つ
-    if (scBuilder.active) { handleScenarioClick(coord); return; }
+    if (scBuilder.active) { 
+      handleScenarioClick(coord); 
+      return; 
+    }
     
     isDrawing = true;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
   };
+
   const handleMove = (e) => {
-    if(!isDrawing && !scBuilder.active) return;
-    e.preventDefault();
-    const touch = e.touches ? e.touches[0] : e;
-    const coord = getChartCoordinates(touch.clientX, touch.clientY);
+    const coord = getChartCoordinates(e.clientX, e.clientY);
     
-    if(scBuilder.active) { scBuilder.mouseX = coord.x; scBuilder.mouseY = coord.y; scBuilder.priceHover = coord.price; scBuilder.timeHover = coord.time; return; }
-    if(currentTool === 'pen') currentShape.points.push({time: coord.time, price: coord.price});
+    if (scBuilder.active) { 
+      scBuilder.mouseX = coord.x; scBuilder.mouseY = coord.y; 
+      scBuilder.priceHover = coord.price; scBuilder.timeHover = coord.time; 
+      return; 
+    }
+    
+    if (!isDrawing) return;
+    e.preventDefault();
+    if (currentTool === 'pen') currentShape.points.push({time: coord.time, price: coord.price});
     else currentShape.p2 = {time: coord.time, price: coord.price};
   };
-  const handleEnd = (e) => {
-    if(!isDrawing) return;
+
+  const handleUp = (e) => {
+    if (!isDrawing) return;
     isDrawing = false;
-    if(currentShape) shapes.push(currentShape);
+    if (currentShape) shapes.push(currentShape);
     currentShape = null;
     document.querySelector('.tool-btn[data-tool="cursor"]').click();
   };
 
-  // 一番上の canvas(オーバーレイ) にリスナーを登録
-  canvas.addEventListener('touchstart', handleStart, {passive: false});
-  canvas.addEventListener('touchmove', handleMove, {passive: false});
-  canvas.addEventListener('touchend', handleEnd);
-  canvas.addEventListener('mousedown', handleStart);
-  canvas.addEventListener('mousemove', handleMove);
-  canvas.addEventListener('mouseup', handleEnd);
+  canvas.addEventListener('pointerdown', handleDown, {passive: false});
+  canvas.addEventListener('pointermove', handleMove, {passive: false});
+  canvas.addEventListener('pointerup', handleUp);
+  canvas.addEventListener('pointercancel', handleUp);
 }
 
 function setupTools() {
@@ -559,7 +620,8 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      // Cursor以外のツールを選んだ時は canvas がタッチを拾う
+      
+      // Cursor以外の時は Canvas が入力を受け取る
       canvas.style.pointerEvents = currentTool !== 'cursor' ? 'auto' : 'none';
       chart.applyOptions({ handleScroll: currentTool === 'cursor', handleScale: currentTool === 'cursor' });
       closeAllSheets();
@@ -609,7 +671,9 @@ function drawPositionTool(type, entry, tp, sl, isPreview, expireTime) {
 }
 function drawBuilderPreview() {
   if(scBuilder.priceHover==null) return;
-  ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
+  // クロスヘア（指の位置目安）
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
+  
   const hov = {price: scBuilder.priceHover, time: scBuilder.timeHover};
   if(scBuilder.step===1) drawPositionTool(scBuilder.type, scBuilder.entry, null, hov, true);
   else if(scBuilder.step===2) drawPositionTool(scBuilder.type, scBuilder.entry, hov, scBuilder.sl, true);
@@ -634,8 +698,8 @@ function startScenarioBuilder(type) {
   scBuilder = { active: true, type: type, step: 0 };
   if(type === 'skip') { openReasonModal('skip'); } 
   else { 
-    canvas.style.pointerEvents = 'auto'; // タップを受け付ける
-    chart.applyOptions({ handleScroll: false, handleScale: false }); // スクロール固定
+    canvas.style.pointerEvents = 'auto'; // キャンバスをタップ可能にする
+    chart.applyOptions({ handleScroll: false, handleScale: false }); 
     showGuide("👆 1. エントリー価格をタップ"); 
   }
 }
@@ -656,7 +720,7 @@ function openReasonModal(type) {
 }
 function cancelScenarioBuilder() { 
   scBuilder.active=false; hideGuide(); 
-  document.querySelector('.tool-btn[data-tool="cursor"]').click(); // pointerEventsを元に戻す
+  document.querySelector('.tool-btn[data-tool="cursor"]').click(); 
 }
 
 function updateScMode(id, mode) { const sc = scenarios.find(s => s.id === id); if (sc) sc.mode = mode; }
@@ -688,7 +752,7 @@ function renderScenarios() {
   scenarios.forEach(sc => {
     let selectHtml = '';
     if(sc.type !== 'skip') {
-      selectHtml = `<select class="input-field" style="padding:6px; margin-top:8px;" onchange="updateScMode(${sc.id}, this.value)" ${sc.expired ? 'disabled' : ''}>
+      selectHtml = `<select class="input-field" style="padding:6px; margin-top:8px; margin-bottom:0;" onchange="updateScMode(${sc.id}, this.value)" ${sc.expired ? 'disabled' : ''}>
         <option value="limit" ${sc.mode==='limit'?'selected':''}>⚡ 指値</option>
         <option value="pa" ${sc.mode==='pa'?'selected':''}>👀 PA確認</option>
       </select>`;
@@ -776,7 +840,7 @@ function stepCandleEngine() {
   if (last.time === t) { last.high = Math.max(last.high, baseC.high); last.low = Math.min(last.low, baseC.low); last.close = baseC.close; candleSeries.update(last); }
   else { visibleData.push({ time: t, open: baseC.open, high: baseC.high, low: baseC.low, close: baseC.close }); candleSeries.update(visibleData[visibleData.length-1]); }
   document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
-  chart.timeScale().scrollToRealTime(); // スクロール追従
+  chart.timeScale().scrollToRealTime(); 
   return true;
 }
 
@@ -852,45 +916,93 @@ function endSim(title, pips) {
   m.style.display = 'flex';
   
   if(pips!=null) recordResult(true, pips>0, pips); else if(scenarios.some(s=>s.type==='skip')) recordResult(false, false, 0);
+  // トップ画面の裏で成績が更新されるように呼ぶ
+  updateTopStatsUI();
 }
 
-// ====== 成績・統計 ======
+// ====== 成績・統計・期間フィルタ ======
 function recordResult(isEntry, isWin, pips) {
   const records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
-  records.push({entry: isEntry, win: isWin, pips: pips}); localStorage.setItem('trade_stats_mobile_v1', JSON.stringify(records));
+  records.push({entry: isEntry, win: isWin, pips: pips, ts: Date.now()}); 
+  localStorage.setItem('trade_stats_mobile_v1', JSON.stringify(records));
 }
 
-function getStatsData() {
-  const records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
-  if(records.length===0) return { winRate: 0, gain: 0, loss: 0, rr: 0 };
+function getStatsData(period = 'all') {
+  let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
+  
+  // 期間ソート
+  if (period !== 'all') {
+    const now = Date.now();
+    const msInDay = 24 * 60 * 60 * 1000;
+    const limit = period === '7d' ? 7 * msInDay : 30 * msInDay;
+    records = records.filter(r => (now - r.ts) <= limit);
+  }
+
+  if(records.length===0) return { winRate: 0, gain: 0, loss: 0, rr: 0, ev: 0 };
+  
   const entries = records.filter(r=>r.entry); const wins = entries.filter(r=>r.win);
   const winRate = entries.length>0 ? (wins.length/entries.length)*100 : 0;
-  let grossWin=0, grossLoss=0; wins.forEach(r=>grossWin+=Math.abs(r.pips)); entries.filter(r=>!r.win).forEach(r=>grossLoss+=Math.abs(r.pips));
-  const rr = grossLoss>0 ? (grossWin/wins.length / (grossLoss/(entries.length-wins.length))) : 0;
-  return { winRate, gain: grossWin, loss: grossLoss, rr };
+  let grossWin=0, grossLoss=0; 
+  wins.forEach(r=>grossWin+=Math.abs(r.pips)); 
+  entries.filter(r=>!r.win).forEach(r=>grossLoss+=Math.abs(r.pips));
+  
+  const rr = grossLoss>0 ? (grossWin/wins.length / (grossLoss/(entries.length-wins.length))) : (wins.length>0 ? 99.9 : 0);
+  const ev = entries.length>0 ? (grossWin - grossLoss) / entries.length : 0;
+
+  return { winRate, gain: grossWin, loss: grossLoss, rr, ev };
 }
 
-function updateStatsUI() {
-  const stats = getStatsData();
-  document.getElementById('st-win').innerText = stats.winRate.toFixed(1)+'%';
-  document.getElementById('st-gain-pips').innerText = stats.gain.toFixed(1);
-  document.getElementById('st-loss-pips').innerText = stats.loss.toFixed(1);
-  document.getElementById('st-rr').innerText = stats.rr.toFixed(2);
-}
-
-function updateTopStatsUI() {
-  const stats = getStatsData();
+// TOP画面の成績サマリー
+function updateTopStatsUI(period = 'all') {
+  const stats = getStatsData(period);
+  
+  // TOP画面（要約版）
   document.getElementById('top-st-win').innerText = stats.winRate.toFixed(1)+'%';
   document.getElementById('top-st-gain').innerText = stats.gain.toFixed(1);
   document.getElementById('top-st-loss').innerText = stats.loss.toFixed(1);
   document.getElementById('top-st-rr').innerText = stats.rr.toFixed(2);
+  
+  // ラベル更新
+  const periodText = period === '7d' ? '直近 7日間' : period === '30d' ? '直近 30日間' : '全期間';
+  const lbl = document.getElementById('top-stats-period-lbl');
+  if(lbl) lbl.innerText = periodText;
+
+  // モーダル内詳細
+  document.getElementById('mod-st-win').innerText = stats.winRate.toFixed(1)+'%';
+  document.getElementById('mod-st-gain').innerText = stats.gain.toFixed(1);
+  document.getElementById('mod-st-loss').innerText = stats.loss.toFixed(1);
+  document.getElementById('mod-st-rr').innerText = stats.rr.toFixed(2);
+  const evEl = document.getElementById('mod-st-ev');
+  evEl.innerText = (stats.ev > 0 ? '+' : '') + stats.ev.toFixed(2);
+  evEl.style.color = stats.ev >= 0 ? 'var(--accent)' : 'var(--red)';
+}
+
+function openTopStatsModal() {
+  document.getElementById('modal-top-stats').style.display = 'flex';
+  document.getElementById('stats-period-sel').value = 'all'; // 初期化
+  updateTopStatsUI('all');
 }
 
 function resetStats() { 
-  if(confirm('リセットしますか？')) { 
+  if(confirm('全てのトレード記録を完全に削除しますか？\n（この操作は取り消せません）')) { 
     localStorage.removeItem('trade_stats_mobile_v1'); 
-    updateStatsUI(); updateTopStatsUI();
+    updateTopStatsUI('all');
   } 
+}
+
+// ====== Discord ======
+async function executeSubmitDiscord(btn) {
+  const name = document.getElementById('submit-username').value; const memo = document.getElementById('submit-memo').value;
+  btn.innerText="送信中..."; btn.disabled=true;
+  try {
+    const chartCanvas = chart.takeScreenshot(); const mCanvas = document.createElement('canvas'); mCanvas.width=chartCanvas.width; mCanvas.height=chartCanvas.height;
+    const mCtx = mCanvas.getContext('2d'); mCtx.drawImage(chartCanvas,0,0); mCtx.drawImage(canvas,0,0,chartCanvas.width,chartCanvas.height);
+    mCanvas.toBlob(async(blob) => {
+      const fd = new FormData(); fd.append('file', blob, 'mobile_result.png'); fd.append('content', `**【提出者】** ${name}\n**【振り返り】**\n${memo||"なし"}`);
+      await fetch(DISCORD_WEBHOOK_URL, {method:'POST', body:fd});
+      alert('送信完了'); btn.innerText="送信済";
+    });
+  } catch(e) { alert('送信エラー'); btn.innerText="送信する"; btn.disabled=false; }
 }
 
 function nextProblem() { document.getElementById('modal-result').style.display='none'; loadNewProblem(); }
