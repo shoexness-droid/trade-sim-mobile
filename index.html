@@ -25,113 +25,117 @@ document.addEventListener('lwc-ready', _onLwcReady);
     --bg: #0a0a0a; --bg-panel: #121212; --bg-sheet: #1a1a1a; --bg-hover: #222222;
     --border: rgba(255,255,255,0.1); --text: #ededed; --text-muted: #888888;
     --accent: #c8f135; --green: #4ade80; --red: #f87171; --blue: #60a5fa; --prop-color: #a855f7;
-    --nav-height: 60px; --header-height: 54px;
+    --nav-height: 54px; --header-height: 50px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
   input, textarea, select { user-select: auto; font-family: inherit; }
 
-  .btn { width:100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 14px; border: 1px solid var(--border); background: var(--bg-hover); color: var(--text); text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  /* 汎用UI（全体的にコンパクト化） */
+  .btn { width:100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); background: var(--bg-hover); color: var(--text); text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #000; border: none; }
   .btn-primary:disabled { background: var(--bg-hover); color: var(--text-muted); opacity: 0.5; }
   .btn-long { background: rgba(74,222,128,0.1); border-color: var(--green); color: var(--green); }
   .btn-short { background: rgba(248,113,113,0.1); border-color: var(--red); color: var(--red); }
-  .input-field { width: 100%; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 10px; }
+  .input-field { width: 100%; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 8px; }
   .input-field:focus { border-color: var(--accent); }
 
-  .full-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; height: 100dvh; }
+  .full-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; flex-direction: column; overflow-y: auto; padding: 16px; height: 100dvh; }
   #login-overlay { background: rgba(14,15,17,0.98); align-items: center; justify-content: center; }
-  .login-box { background: var(--bg-panel); border: 1px solid var(--accent); padding: 30px 20px; border-radius: 16px; width: 100%; max-width: 360px; text-align: center; }
+  .login-box { background: var(--bg-panel); border: 1px solid var(--accent); padding: 24px 16px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; }
   
+  /* TOP画面 */
   #top-screen { display: none; padding-bottom: 40px; }
-  .top-header { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
-  .top-title { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 900; }
+  .top-header { display: flex; justify-content: space-between; align-items: center; margin: 5px 0 16px; }
+  .top-title { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 900; }
   .top-title span { color: var(--accent); }
   
-  #resume-panel { background: rgba(200, 241, 53, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none; flex-direction: column; gap: 8px; }
-  #resume-title { font-size: 14px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  #resume-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  #resume-panel { background: rgba(200, 241, 53, 0.05); border: 1px solid var(--accent); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: none; flex-direction: column; gap: 6px; }
+  #resume-title { font-size: 13px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+  #resume-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
 
-  .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: left; cursor: pointer; }
+  .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; text-align: left; cursor: pointer; }
   .mode-card:active { background: var(--bg-hover); }
-  .mode-card h3 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-  .mode-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .mode-card h3 { font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .mode-card p { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
   
+  /* メインアプリ領域 */
   #app-screen { display: none; flex-direction: column; height: 100dvh; }
-  header { height: var(--header-height); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; z-index: 10; flex-shrink: 0; }
-  .mode-badge { font-size: 11px; padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-weight: bold; color: var(--accent); }
-  .tf-select { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-family: 'DM Mono'; font-size:14px; }
+  header { height: var(--header-height); display: flex; justify-content: space-between; align-items: center; padding: 0 12px; background: var(--bg-panel); border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; z-index: 10; flex-shrink: 0; }
+  .mode-badge { font-size: 10px; padding: 3px 6px; background: rgba(255,255,255,0.1); border-radius: 4px; font-weight: bold; color: var(--accent); }
+  .tf-select { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-weight: bold; font-family: 'DM Mono'; font-size:12px; }
   
   main { position: relative; flex: 1; width: 100%; background: var(--bg); overflow: hidden; }
   #chart-container { width: 100%; height: 100%; position: absolute; inset: 0; }
-  
-  /* Canvasはタッチを直接受け取らない。コンテナでイベントキャプチャする */
   #canvas-overlay { position: absolute; inset: 0; z-index: 10; touch-action: none; pointer-events: none; }
   
-  .info-bar { position: absolute; top: 10px; left: 10px; z-index: 5; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); display:flex; flex-direction:column; gap:4px; pointer-events:none; }
-  #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
+  .info-bar { position: absolute; top: 10px; left: 10px; z-index: 5; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); display:flex; flex-direction:column; gap:2px; pointer-events:none; }
+  #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 11px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
-  #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 12px 16px; border-radius: 20px; display: none; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 340px; }
-  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
-  .fab-btn { background: transparent; border: none; color: var(--text); font-size: 20px; padding: 4px; cursor: pointer; }
-  .fab-btn-small { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); font-size: 11px; padding: 6px 12px; border-radius: 14px; cursor: pointer; display: none; }
+  #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 16px; display: none; flex-direction: column; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 320px; }
+  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 6px 14px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
+  .fab-btn { background: transparent; border: none; color: var(--text); font-size: 18px; padding: 4px; cursor: pointer; }
+  .fab-btn-small { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); font-size: 10px; padding: 4px 10px; border-radius: 12px; cursor: pointer; display: none; }
   
   .bottom-nav { height: var(--nav-height); background: var(--bg-panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
-  .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px; gap: 4px; background: transparent; border: none; }
+  .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 9px; gap: 3px; background: transparent; border: none; }
   .nav-item.active { color: var(--accent); }
-  .nav-icon { font-size: 20px; }
+  .nav-icon { font-size: 18px; }
 
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 110; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
   .backdrop.show { opacity: 1; pointer-events: auto; }
   
-  .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 120; padding: 16px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
+  .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 16px; border-top-right-radius: 16px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 120; padding: 14px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
   .bottom-sheet.open { transform: translateY(0); }
-  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
-  .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
-  .sheet-title { font-size: 16px; font-weight: 700; margin: 0; color:var(--text); }
-  .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px auto; flex-shrink: 0; }
+  .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0; }
+  .sheet-title { font-size: 14px; font-weight: 700; margin: 0; color:var(--text); }
+  .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   
-  .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; color: var(--text); }
+  .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tool-btn { aspect-ratio: 1; border-radius: 10px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: var(--text); }
   .tool-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.1); }
-  .tool-lbl { font-size: 9px; margin-top: 4px; color: inherit; font-weight: bold; }
+  .tool-lbl { font-size: 8px; margin-top: 3px; color: inherit; font-weight: bold; }
   
-  .palette { display: flex; justify-content: space-around; padding: 10px; background: var(--bg-panel); border-radius: 12px; align-items: center; }
-  .color-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; }
+  .palette { display: flex; justify-content: space-around; padding: 8px; background: var(--bg-panel); border-radius: 10px; align-items: center; }
+  .color-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; }
   .color-btn.active { border-color: #fff; box-shadow: 0 0 0 2px var(--bg-panel); }
   
-  .sc-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 12px; }
-  .sc-card.long { border-left: 4px solid var(--green); }
-  .sc-card.short { border-left: 4px solid var(--red); }
-  .sc-card.skip { border-left: 4px solid var(--text-muted); }
+  .sc-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 11px; }
+  .sc-card.long { border-left: 3px solid var(--green); }
+  .sc-card.short { border-left: 3px solid var(--red); }
+  .sc-card.skip { border-left: 3px solid var(--text-muted); }
   .sc-val { font-family: 'DM Mono', monospace; font-weight: bold; }
   
-  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(2px); height: 100dvh; }
-  .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 400px; padding: 24px; text-align: center; max-height: 90dvh; overflow-y: auto; }
-  .res-title { font-size: 24px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 10px; }
+  .center-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; justify-content: center; align-items: center; padding: 16px; backdrop-filter: blur(2px); height: 100dvh; }
+  .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 360px; padding: 16px; text-align: center; max-height: 90dvh; overflow-y: auto; }
+  .res-title { font-size: 20px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 8px; }
 
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-box { background: var(--bg-panel); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
-  .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono'; }
-  .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-  .indi-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box { background: var(--bg-panel); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid var(--border); }
+  .stat-val { font-size: 16px; font-weight: 700; font-family: 'DM Mono'; }
+  .stat-lbl { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .indi-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
+
+  /* チェックボックス */
+  .reason-label { display: block; margin-bottom: 6px; font-size: 12px; text-align: left; }
 
   @media (orientation: landscape) {
-    :root { --header-height: 44px; --nav-height: 50px; }
-    .top-header { margin: 5px 0 10px; }
-    .top-title { font-size: 24px; }
-    .top-content-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-start; }
-    .tool-grid { grid-template-columns: repeat(8, 1fr); gap: 6px; }
-    .tool-btn { font-size: 16px; aspect-ratio: auto; height: 48px; }
-    .tool-lbl { font-size: 8px; margin-top: 2px; }
-    .palette { padding: 6px; }
-    .bottom-sheet { padding: 12px; max-height: 100dvh; border-radius: 0; gap: 10px; }
-    .sheet-header { margin-bottom: 4px; }
-    #fab-controls { bottom: 5px; padding: 4px 16px; }
+    :root { --header-height: 40px; --nav-height: 46px; }
+    .top-header { margin: 2px 0 8px; }
+    .top-title { font-size: 20px; }
+    .top-content-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: flex-start; }
+    .tool-grid { grid-template-columns: repeat(8, 1fr); gap: 4px; }
+    .tool-btn { font-size: 14px; aspect-ratio: auto; height: 42px; }
+    .tool-lbl { font-size: 7px; margin-top: 2px; }
+    .palette { padding: 4px; }
+    .bottom-sheet { padding: 10px; max-height: 100dvh; border-radius: 0; gap: 8px; }
+    .sheet-header { margin-bottom: 2px; }
+    #fab-controls { bottom: 5px; padding: 4px 16px; gap: 12px; }
     .fab-btn { font-size: 16px; }
-    .info-bar { flex-direction: row; gap: 15px; }
+    .info-bar { flex-direction: row; gap: 12px; }
   }
 </style>
 </head>
@@ -140,10 +144,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
 <div id="login-overlay" class="full-overlay">
   <div class="login-box">
     <h2 style="color:#fff; margin-bottom:8px;">SIMULATOR <span style="color:var(--accent);">PRO</span></h2>
-    <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">認証口座番号を入力してください</p>
-    <input type="text" id="login-account" class="input-field" placeholder="例: 12345678" style="text-align:center; font-size:16px;">
+    <p style="font-size:11px; color:var(--text-muted); margin-bottom:16px;">認証口座番号を入力してください</p>
+    <input type="text" id="login-account" class="input-field" placeholder="例: 12345678" style="text-align:center; font-size:14px;">
     <button class="btn btn-primary" onclick="attemptLogin(true)" id="btn-login">ログインして開始</button>
-    <p id="login-error" style="color:var(--red); font-size:12px; margin-top:10px; display:none;"></p>
+    <p id="login-error" style="color:var(--red); font-size:11px; margin-top:8px; display:none;"></p>
   </div>
 </div>
 
@@ -151,9 +155,9 @@ document.addEventListener('lwc-ready', _onLwcReady);
   <div class="top-header">
     <div>
       <div class="top-title">SIMULATOR <span>PRO</span></div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Mobile Edition</div>
+      <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Mobile Edition</div>
     </div>
-    <button class="btn" style="width:auto; padding:8px 12px; border:1px solid var(--border);" onclick="requestFullScreen()">🔲 全画面化</button>
+    <button class="btn" style="width:auto; padding:6px 10px; font-size:11px; border:1px solid var(--border);" onclick="requestFullScreen()">🔲 全画面化</button>
   </div>
 
   <div class="top-content-wrapper">
@@ -161,38 +165,38 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div id="resume-panel">
         <div id="resume-title">🔄 中断データがあります</div>
         <div id="resume-desc">進行中のチャレンジデータが見つかりました。<br>続きから再開できます。</div>
-        <div style="display:flex; gap:10px; margin-top:4px;">
-          <button class="btn btn-primary" onclick="resumeSavedGame()" style="padding:10px;">再開する</button>
-          <button class="btn" onclick="clearSavedGame()" style="padding:10px; background:rgba(248,113,113,0.1); color:var(--red); border-color:var(--red);">破棄</button>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button class="btn btn-primary" onclick="resumeSavedGame()" style="padding:8px; font-size:12px;">再開する</button>
+          <button class="btn" onclick="clearSavedGame()" style="padding:8px; font-size:12px; background:rgba(248,113,113,0.1); color:var(--red); border-color:var(--red);">破棄</button>
         </div>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <label style="font-size:12px; color:var(--text-muted);">通貨ペア選択</label>
-        <select id="top-symbol-sel" class="input-field" style="margin-top:6px; font-family:'DM Mono';">
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px; color:var(--text-muted);">通貨ペア選択</label>
+        <select id="top-symbol-sel" class="input-field" style="margin-top:4px; font-family:'DM Mono';">
           <option value="XAUUSDT">XAU/USD (Gold)</option>
           <option value="BTCUSDT" selected>BTC/USD (Bitcoin)</option>
         </select>
       </div>
-      <div style="margin-bottom:24px;">
-        <button class="btn" style="background:rgba(200,241,53,0.05); border-color:var(--accent); color:var(--accent);" onclick="openTopStatsModal()">📊 あなたの成績サマリーを見る</button>
+      <div style="margin-bottom:16px;">
+        <button class="btn" style="background:rgba(200,241,53,0.05); border-color:var(--accent); color:var(--accent); padding:10px;" onclick="openTopStatsModal()">📊 あなたの成績サマリーを見る</button>
       </div>
     </div>
     <div>
-      <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">🎮 モード選択</div>
-      <div class="mode-card" onclick="startGame('free')" style="border-left:4px solid var(--green);">
+      <div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin-bottom:8px;">🎮 モード選択</div>
+      <div class="mode-card" onclick="startGame('free')" style="border-left:3px solid var(--green);">
         <h3 style="color:var(--green);">🟢 フリー・トレーニング</h3>
         <p>無制限・やり直し可能。じっくり相場観を養う基本モード。</p>
       </div>
-      <div class="mode-card" onclick="startGame('practice10')" style="border-left:4px solid #fbbf24;">
+      <div class="mode-card" onclick="startGame('practice10')" style="border-left:3px solid #fbbf24;">
         <h3 style="color:#fbbf24;">🟡 タクティカル・ドリル (10回)</h3>
         <p>10回連続。短期集中で判断力を鍛える。</p>
       </div>
-      <div class="mode-card" onclick="startGame('challenge100')" style="border-left:4px solid var(--red);">
+      <div class="mode-card" onclick="startGame('challenge100')" style="border-left:3px solid var(--red);">
         <h3 style="color:var(--red);">🔴 アイアンマン (100回)</h3>
         <p>真の実力が試される過酷な100本ノック。</p>
       </div>
-      <div class="mode-card" onclick="startGame('fintokei')" style="border-left:4px solid var(--prop-color); background: rgba(168,85,247,0.05);">
+      <div class="mode-card" onclick="startGame('fintokei')" style="border-left:3px solid var(--prop-color); background: rgba(168,85,247,0.05);">
         <h3 style="color:var(--prop-color);">🏆 フィントケイ (Fintokei) 審査</h3>
         <p>目標+80pips / 1トレ最大損失-50pips / 累積最大損失-100pips で合否判定を行います。</p>
       </div>
@@ -204,11 +208,11 @@ document.addEventListener('lwc-ready', _onLwcReady);
   <header>
     <div class="header-left">
       <div class="mode-badge" id="mode-badge">FREE</div>
-      <div id="active-symbol-badge" style="font-weight:bold; font-size:14px; margin-left:8px;">BTC/USD</div>
+      <div id="active-symbol-badge" style="font-weight:bold; font-size:12px; margin-left:6px;">BTC/USD</div>
     </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <button class="btn" style="padding:4px 8px; width:auto; border:none; background:transparent; font-size:16px;" onclick="requestFullScreen()">🔲</button>
-      <button class="btn" style="padding:4px 8px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:14px;" onclick="requestFullScreen()">🔲</button>
+      <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:16px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
         <option value="15m">15m</option>
         <option value="1h">1H</option>
@@ -224,18 +228,16 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
     <div id="guide-toast"></div>
     
-    <!-- LWC Container -->
     <div id="chart-container"></div>
-    <!-- Visual Canvas Overlay (touch ignores this layer completely) -->
     <canvas id="canvas-overlay"></canvas>
 
     <div id="action-panel">
-      <div style="font-weight:bold; color:var(--accent); font-size:14px; text-align:center;">⚠️ PA確認モード</div>
-      <div id="pa-msg" style="font-size:12px; text-align:center; color:var(--text-muted); margin-bottom:8px;">条件に到達しました。判断してください。</div>
-      <button class="btn" onclick="stepCandleManual()">⏭ 1本進める (コマ送り)</button>
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" style="background:var(--green); color:#fff;" onclick="paExecuteEntry()">✅ エントリー</button>
-        <button class="btn btn-primary" style="background:var(--red); color:#fff;" id="btn-pa-skip" onclick="paSkipEntry()">❌ 見送る</button>
+      <div style="font-weight:bold; color:var(--accent); font-size:13px; text-align:center;">⚠️ PA確認</div>
+      <div id="pa-msg" style="font-size:11px; text-align:center; color:var(--text-muted); margin-bottom:6px;">条件に到達しました。判断してください。</div>
+      <button class="btn" style="padding:10px; font-size:12px;" onclick="manualStep()">⏭ 1本進める</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-primary" style="background:var(--green); color:#fff; padding:10px; font-size:12px;" onclick="paExecuteEntry()">✅ エントリー</button>
+        <button class="btn btn-primary" style="background:var(--red); color:#fff; padding:10px; font-size:12px;" id="btn-pa-skip" onclick="paSkipEntry()">❌ 見送る</button>
       </div>
     </div>
 
@@ -270,9 +272,9 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div class="color-btn" style="background:#60a5fa;" data-color="#60a5fa"></div>
       <div class="color-btn" style="background:#c8f135;" data-color="#c8f135"></div>
       <div style="display:flex; gap:6px;">
-        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="undoDraw()">↩️ 1つ戻る</button>
-        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="deleteSelectedShape()">🗑️ 選択削除</button>
-        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--red); color:var(--red);" onclick="clearDraw()">🧹 全消去</button>
+        <button class="btn" style="padding:6px 10px; font-size:10px; width:auto; border-color:var(--text-muted);" onclick="undoDraw()">↩️ 戻す</button>
+        <button class="btn" style="padding:6px 10px; font-size:10px; width:auto; border-color:var(--text-muted);" onclick="deleteSelectedShape()">🗑️ 削除</button>
+        <button class="btn" style="padding:6px 10px; font-size:10px; width:auto; border-color:var(--red); color:var(--red);" onclick="clearDraw()">🧹 全消</button>
       </div>
     </div>
   </div>
@@ -285,7 +287,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
     </div>
     <div id="sc-cards-container"></div>
-    <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn btn-long" onclick="startScenarioBuilder('long')">📈 ロングシナリオ作成</button>
       <button class="btn btn-short" onclick="startScenarioBuilder('short')">📉 ショートシナリオ作成</button>
       <button class="btn" onclick="startScenarioBuilder('skip')">🙈 見送る (No Trade)</button>
@@ -302,26 +304,26 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
     
     <div class="indi-row">
-      <span style="font-size:14px; font-weight:bold;">📊 ティックボリューム</span>
-      <button class="btn" id="btn-toggle-vol" style="width:auto; padding:6px 16px;" onclick="toggleVolume()">OFF</button>
+      <span style="font-weight:bold;">📊 ティックボリューム</span>
+      <button class="btn" id="btn-toggle-vol" style="width:auto; padding:6px 16px; font-size:12px;" onclick="toggleVolume()">OFF</button>
     </div>
-    <hr style="border:none; border-top:1px solid var(--border); margin:10px 0 20px;">
+    <hr style="border:none; border-top:1px solid var(--border); margin:8px 0 16px;">
     
-    <div style="font-size:14px; font-weight:bold; margin-bottom:15px;">移動平均線 (MA)</div>
+    <div style="font-weight:bold; margin-bottom:12px;">移動平均線 (MA)</div>
     <div class="indi-row">
-      <button class="btn" id="ma-vis-0" style="width:44px; padding:8px; border-color:#60a5fa; color:#60a5fa;" onclick="toggleMALine(0)">●</button>
-      <button class="btn" id="ma-type-0" style="width:70px; padding:8px;" onclick="toggleMAType(0)">SMA</button>
-      <input type="number" id="ma-len-0" class="input-field" value="20" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
+      <button class="btn" id="ma-vis-0" style="width:40px; padding:6px; border-color:#60a5fa; color:#60a5fa;" onclick="toggleMALine(0)">●</button>
+      <button class="btn" id="ma-type-0" style="width:60px; padding:6px;" onclick="toggleMAType(0)">SMA</button>
+      <input type="number" id="ma-len-0" class="input-field" value="20" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
     <div class="indi-row">
-      <button class="btn" id="ma-vis-1" style="width:44px; padding:8px; border-color:#fbbf24; color:#fbbf24;" onclick="toggleMALine(1)">●</button>
-      <button class="btn" id="ma-type-1" style="width:70px; padding:8px;" onclick="toggleMAType(1)">SMA</button>
-      <input type="number" id="ma-len-1" class="input-field" value="50" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
+      <button class="btn" id="ma-vis-1" style="width:40px; padding:6px; border-color:#fbbf24; color:#fbbf24;" onclick="toggleMALine(1)">●</button>
+      <button class="btn" id="ma-type-1" style="width:60px; padding:6px;" onclick="toggleMAType(1)">SMA</button>
+      <input type="number" id="ma-len-1" class="input-field" value="50" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
     <div class="indi-row">
-      <button class="btn" id="ma-vis-2" style="width:44px; padding:8px; border-color:#f87171; color:#f87171;" onclick="toggleMALine(2)">●</button>
-      <button class="btn" id="ma-type-2" style="width:70px; padding:8px;" onclick="toggleMAType(2)">SMA</button>
-      <input type="number" id="ma-len-2" class="input-field" value="200" style="margin:0; width:100px; text-align:center;" oninput="updateMA()">
+      <button class="btn" id="ma-vis-2" style="width:40px; padding:6px; border-color:#f87171; color:#f87171;" onclick="toggleMALine(2)">●</button>
+      <button class="btn" id="ma-type-2" style="width:60px; padding:6px;" onclick="toggleMAType(2)">SMA</button>
+      <input type="number" id="ma-len-2" class="input-field" value="200" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
   </div>
 
@@ -332,24 +334,24 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div class="sheet-title">⚙️ 設定</div>
       <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
     </div>
-    <label style="font-size:12px; color:var(--text-muted);">デフォルトエントリー方式</label>
-    <select id="cfg-default-mode" class="input-field" style="margin-bottom:12px;">
+    <label style="font-size:11px; color:var(--text-muted);">デフォルトエントリー方式</label>
+    <select id="cfg-default-mode" class="input-field" style="margin-bottom:10px;">
       <option value="pa">👀 PA確認 (到達時に手動判断)</option>
       <option value="limit">⚡ 指値 (到達で即エントリー)</option>
     </select>
-    <label style="font-size:12px; color:var(--text-muted);">シナリオの有効期限</label>
-    <select id="cfg-expire-mode" class="input-field" style="margin-bottom:12px;">
+    <label style="font-size:11px; color:var(--text-muted);">シナリオの有効期限</label>
+    <select id="cfg-expire-mode" class="input-field" style="margin-bottom:10px;">
       <option value="box">描画した枠内でのみ</option>
       <option value="infinite">枠外(未来)でも到達で</option>
     </select>
-    <label style="font-size:12px; color:var(--text-muted);">PA確認モードの挙動</label>
-    <select id="cfg-pa-behavior" class="input-field" style="margin-bottom:12px;">
+    <label style="font-size:11px; color:var(--text-muted);">PA確認モードの挙動</label>
+    <select id="cfg-pa-behavior" class="input-field" style="margin-bottom:10px;">
       <option value="touch_once">到達時に1回だけ確認する</option>
       <option value="touch_every">タッチする度毎回確認</option>
       <option value="in_zone">期限内に入ったら常にコマ送り</option>
     </select>
-    <label style="font-size:12px; color:var(--text-muted);">自動再生スピード</label>
-    <input type="range" id="cfg-speed" min="1" max="10" value="5" style="width:100%; margin-bottom:20px;">
+    <label style="font-size:11px; color:var(--text-muted);">自動再生スピード</label>
+    <input type="range" id="cfg-speed" min="1" max="10" value="5" style="width:100%; margin-bottom:16px;">
   </div>
 
   <nav class="bottom-nav">
@@ -363,21 +365,21 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
 <div class="center-modal" id="modal-top-stats">
   <div class="modal-content">
-    <h3 style="font-size:16px; margin-bottom:16px;">📈 成績詳細フィルター</h3>
+    <h3 style="font-size:15px; margin-bottom:12px;">📈 成績詳細フィルター</h3>
     <select id="stats-period-sel" class="input-field" onchange="updateTopStatsUI(this.value)">
       <option value="all">全期間</option>
       <option value="7d">直近 7日間</option>
       <option value="30d">直近 30日間</option>
     </select>
-    <div class="stat-grid" id="modal-stat-grid" style="margin: 16px 0;">
+    <div class="stat-grid" id="modal-stat-grid" style="margin: 12px 0;">
       <div class="stat-box"><div class="stat-val" id="mod-st-win">0%</div><div class="stat-lbl">勝率</div></div>
       <div class="stat-box"><div class="stat-val" id="mod-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
       <div class="stat-box"><div class="stat-val" style="color:var(--green);" id="mod-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
       <div class="stat-box"><div class="stat-val" style="color:var(--red);" id="mod-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
       <div class="stat-box" style="grid-column:span 2;"><div class="stat-val" id="mod-st-ev">0.0</div><div class="stat-lbl">期待値 (pips/回)</div></div>
     </div>
-    <div style="display:flex; gap:10px;">
-      <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="resetStats()">🗑 全データ削除</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="resetStats()">🗑 データ削除</button>
       <button class="btn btn-primary" onclick="document.getElementById('modal-top-stats').style.display='none';">閉じる</button>
     </div>
   </div>
@@ -385,16 +387,24 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
 <div class="center-modal" id="modal-reason">
   <div class="modal-content">
-    <h3 id="rm-title" style="font-size:16px; margin-bottom:16px;">シナリオの根拠</h3>
-    <div id="rm-reasons" style="display:flex; flex-direction:column; gap:10px; text-align:left; font-size:14px; margin-bottom:16px;">
-      <label><input type="checkbox" value="ダウ理論"> ダウ理論 / トレンド</label>
-      <label><input type="checkbox" value="水平線/サポレジ"> 水平線 / サポレジ</label>
-      <label><input type="checkbox" value="MA反発"> MA / インジケーター</label>
-      <label><input type="checkbox" value="チャートパターン"> チャートパターン</label>
-      <label><input type="checkbox" value="プライスアクション"> プライスアクション</label>
+    <h3 id="rm-title" style="font-size:15px; margin-bottom:12px;">シナリオの根拠</h3>
+    <div id="rm-reasons-trade" style="display:flex; flex-direction:column; gap:6px; text-align:left; margin-bottom:12px;">
+      <label class="reason-label"><input type="checkbox" value="ダウ理論/トレンドフォロー"> ダウ理論 / トレンド</label>
+      <label class="reason-label"><input type="checkbox" value="水平線/サポレジ反発"> 水平線 / サポレジ</label>
+      <label class="reason-label"><input type="checkbox" value="トレンドライン/チャネル"> トレンドライン / チャネル</label>
+      <label class="reason-label"><input type="checkbox" value="MA/インジケーター"> MA / インジケーター</label>
+      <label class="reason-label"><input type="checkbox" value="チャートパターン"> チャートパターン</label>
+      <label class="reason-label"><input type="checkbox" value="プライスアクション"> プライスアクション</label>
+    </div>
+    <div id="rm-reasons-skip" style="display:none; flex-direction:column; gap:6px; text-align:left; margin-bottom:12px;">
+      <label class="reason-label"><input type="checkbox" value="方向感が不明確 (レンジ)"> 方向感が不明確</label>
+      <label class="reason-label"><input type="checkbox" value="優位性のある形ではない"> 優位性のある形ではない</label>
+      <label class="reason-label"><input type="checkbox" value="RR(リスクリワード)が悪い"> RRが悪い</label>
+      <label class="reason-label"><input type="checkbox" value="上位足と逆行している"> 上位足と逆行</label>
+      <label class="reason-label"><input type="checkbox" value="重要指標・ニュース警戒"> 重要指標警戒</label>
     </div>
     <input type="text" id="rm-memo" class="input-field" placeholder="フリーメモ (任意)">
-    <div style="display:flex; gap:10px; margin-top:10px;">
+    <div style="display:flex; gap:8px; margin-top:8px;">
       <button class="btn" onclick="document.getElementById('modal-reason').style.display='none'; cancelScenarioBuilder();">ｷｬﾝｾﾙ</button>
       <button class="btn btn-primary" onclick="submitReason()">確定</button>
     </div>
@@ -404,16 +414,16 @@ document.addEventListener('lwc-ready', _onLwcReady);
 <div class="center-modal" id="modal-result">
   <div class="modal-content">
     <div class="res-title" id="res-title"></div>
-    <div id="res-desc" style="font-size:14px; color:var(--text-muted); margin-bottom:10px;"></div>
-    <div id="fintokei-alert" style="display:none; font-size:13px; font-weight:bold; margin-bottom:15px; padding:10px; border-radius:8px;"></div>
+    <div id="res-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:10px;"></div>
+    <div id="fintokei-alert" style="display:none; font-size:12px; font-weight:bold; margin-bottom:12px; padding:8px; border-radius:6px;"></div>
     
-    <div style="background:rgba(96,165,250,0.1); border:1px solid var(--blue); padding:16px; border-radius:12px; margin-bottom:20px;">
-      <div style="font-size:12px; color:var(--blue); font-weight:bold; margin-bottom:8px;">📝 Discordへ振り返り送信</div>
-      <input type="text" id="submit-username" class="input-field" placeholder="名前" readonly style="color:var(--accent);">
-      <textarea id="submit-memo" class="input-field" rows="2" placeholder="気づき・反省点"></textarea>
-      <button class="btn" style="background:var(--blue); color:#fff; border:none;" onclick="executeSubmitDiscord(this)">📤 送信する</button>
+    <div style="background:rgba(96,165,250,0.1); border:1px solid var(--blue); padding:12px; border-radius:10px; margin-bottom:16px;">
+      <div style="font-size:11px; color:var(--blue); font-weight:bold; margin-bottom:6px;">📝 Discordへ振り返り送信</div>
+      <input type="text" id="submit-username" class="input-field" placeholder="名前" readonly style="color:var(--accent); margin-bottom:6px;">
+      <textarea id="submit-memo" class="input-field" rows="2" placeholder="気づき・反省点" style="margin-bottom:6px;"></textarea>
+      <button class="btn" style="background:var(--blue); color:#fff; border:none; padding:10px;" onclick="executeSubmitDiscord(this)">📤 送信する</button>
     </div>
-    <div style="display:flex; gap:10px; flex-direction:column;">
+    <div style="display:flex; gap:8px; flex-direction:column;" id="res-btn-container">
       <button class="btn btn-primary" onclick="nextProblem()">⏭ 次のチャートへ進む</button>
       <button class="btn" onclick="reviewChart()">🔍 閉じてチャートを振り返る</button>
     </div>
@@ -474,6 +484,9 @@ function requestFullScreen() {
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
 function _startInit() {
   checkSavedProgress();
+  // document.getElementById('login-overlay').style.display = 'none';
+  // document.getElementById('top-screen').style.display = 'flex';
+  // updateTopStatsUI();
 }
 
 async function attemptLogin(tryFullscreen = false) {
@@ -816,20 +829,46 @@ async function loadNewProblem() {
   
   currentIndex = Math.max(0, fullBaseData.length - 200); 
   initialIndex = currentIndex;
-  applyTimeframe();
+  applyTimeframe(null, 100);
   document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
 }
 
-function changeTimeframe() { currentTF = document.getElementById('tf-sel').value; applyTimeframe(); }
-function applyTimeframe() {
+// ★ 時間足変更時のアンカー機能（中心時間を記憶して復元）
+function changeTimeframe() { 
+  const range = chart.timeScale().getVisibleLogicalRange(); 
+  let centerTime = null; let barCount = 100;
+  if (range && visibleData.length > 0) { 
+    const centerLogical = (range.from + range.to) / 2; 
+    centerTime = calcTimeFromLogical(centerLogical); 
+    barCount = range.to - range.from; 
+  }
+  currentTF = document.getElementById('tf-sel').value; 
+  applyTimeframe(centerTime, barCount); 
+}
+
+function applyTimeframe(centerTime = null, barCount = 100) {
   if(fullBaseData.length===0) return;
   visibleData = aggregateData(fullBaseData, currentTF, currentIndex);
   candleSeries.setData(visibleData);
+  
+  // スケールのリセット
+  chart.priceScale('right').applyOptions({ autoScale: true });
+  
   if(isMaVisible) updateMA();
   if(isVolumeVisible) updateVolumeData();
-  const dataLen = visibleData.length;
-  chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 20 });
+  
+  // 中心時間を指定して元の表示位置にスナップさせる
+  if (centerTime !== null) {
+    const newCenterLog = logicalFromTime(centerTime);
+    if (newCenterLog !== null) { 
+      chart.timeScale().setVisibleLogicalRange({ from: newCenterLog - barCount / 2, to: newCenterLog + barCount / 2 }); 
+    }
+  } else {
+    const dataLen = visibleData.length;
+    chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 20 });
+  }
 }
+
 function aggregateData(baseArr, tfStr, maxIndex) {
   if (tfStr === '15m') return baseArr.slice(0, maxIndex + 1);
   const sec = tfStr === '1h' ? 3600 : 14400; const res = []; let cur = null;
@@ -875,7 +914,7 @@ function logicalFromTime(t) {
   return r + (t - t1) / (t2 - t1);
 }
 
-// ====== Canvas & イベントキャプチャ ======
+// ====== Canvas & ドラッグ ======
 function resizeCanvas(w, h) {
   const ratio = window.devicePixelRatio || 1; 
   canvasW = w; canvasH = h;
@@ -1240,7 +1279,13 @@ function handleScenarioClick(coord) {
 }
 function openReasonModal(type) {
   hideGuide(); document.getElementById('modal-reason').style.display = 'flex';
-  document.getElementById('rm-title').innerText = type==='skip' ? '見送りの根拠' : `${type.toUpperCase()}の根拠`;
+  const isSkip = type === 'skip';
+  document.getElementById('rm-title').innerText = isSkip ? '見送りの根拠' : `${type.toUpperCase()}の根拠`;
+  
+  document.getElementById('rm-reasons-trade').style.display = isSkip ? 'none' : 'flex';
+  document.getElementById('rm-reasons-skip').style.display = isSkip ? 'flex' : 'none';
+  document.querySelectorAll('#modal-reason input[type="checkbox"]').forEach(cb => cb.checked = false);
+  document.getElementById('rm-memo').value = '';
 }
 function cancelScenarioBuilder() { 
   scBuilder.active=false; hideGuide(); 
@@ -1250,7 +1295,9 @@ function cancelScenarioBuilder() {
 function updateScMode(id, mode) { const sc = scenarios.find(s => s.id === id); if (sc) sc.mode = mode; }
 
 function submitReason() {
-  const checked = document.querySelectorAll('#rm-reasons input:checked');
+  const isSkip = scBuilder.type === 'skip';
+  const selector = isSkip ? '#rm-reasons-skip input:checked' : '#rm-reasons-trade input:checked';
+  const checked = document.querySelectorAll(selector);
   const memo = document.getElementById('rm-memo').value;
   if(checked.length===0 && !memo) { alert("根拠を選択・入力してください"); return; }
   
@@ -1296,10 +1343,16 @@ function renderScenarios() {
 }
 
 // ====== シミュレーション ======
+function manualStep() {
+  if (!stepCandleEngine()) {
+    endSim("データ終了", null);
+  }
+}
+
 function resetFabControls() {
   document.getElementById('fab-controls').innerHTML = `
     <button class="fab-btn-small" id="btn-scroll-latest" onclick="scrollToLatest()">⏩ 最新へ</button>
-    <button class="fab-btn" onclick="stepCandleEngine()" style="font-size:16px;">⏭ 1本</button>
+    <button class="fab-btn" onclick="manualStep()" style="font-size:16px;">⏭ 1本</button>
     <div style="width:1px; height:20px; background:var(--border);"></div>
     <button class="fab-btn" id="btn-toggle-play" onclick="togglePlayPause()" style="color:var(--accent); font-size:24px;">▶️</button>
     <div style="width:1px; height:20px; background:var(--border);"></div>
@@ -1309,8 +1362,10 @@ function resetFabControls() {
 
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
-  document.querySelector('.tool-btn[data-tool="cursor"]').click();
   
+  // シミュレーション中は描画や操作をさせないためカーソルモードへリセット
+  document.querySelector('.tool-btn[data-tool="cursor"]').click();
+
   resetFabControls();
   document.getElementById('fab-controls').style.display = 'flex';
   document.getElementById('btn-toggle-play').innerText = '⏸️';
@@ -1372,7 +1427,7 @@ function resumeSimulation() {
 }
 
 function stepCandleEngine() {
-  if (currentIndex + 1 >= fullBaseData.length) return false;
+  if (currentIndex >= fullBaseData.length - 1) return false;
   currentIndex++; const baseC = fullBaseData[currentIndex];
   const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400; const t = Math.floor(baseC.time / sec) * sec;
   let last = visibleData[visibleData.length - 1];
@@ -1503,11 +1558,9 @@ function endSim(title, pips) {
 function reviewChart() {
   document.getElementById('modal-result').style.display = 'none';
   const fab = document.getElementById('fab-controls');
+  // 振り返り後の導線（「次のチャートへ」ボタン）を表示
   fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
   fab.style.display = 'flex';
-  
-  // 振り返り時はカーソルモードに強制的に戻し、チャートのスクロールを有効化する
-  document.querySelector('.tool-btn[data-tool="cursor"]').click();
 }
 
 // ====== 成績・統計・期間フィルタ ======
@@ -1571,7 +1624,7 @@ async function executeSubmitDiscord(btn) {
 }
 
 function nextProblem() { 
-  if(appMode !== 'free' && appMode !== 'live' && playsDone >= maxPlays && appMode !== 'fintokei') {
+  if(appMode !== 'free' && playsDone >= maxPlays && appMode !== 'fintokei') {
     alert("チャレンジ完了です！お疲れ様でした。");
     clearSavedGame(); goToTop(); return;
   }
