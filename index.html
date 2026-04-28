@@ -116,7 +116,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 360px; padding: 16px; text-align: center; max-height: 90dvh; overflow-y: auto; }
   .res-title { font-size: 20px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 8px; }
 
-  /* グリッドを3列に変更して実行率・正答率を表示 */
   .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat-box { background: var(--bg-panel); padding: 10px 4px; border-radius: 6px; text-align: center; border: 1px solid var(--border); }
   .stat-val { font-size: 15px; font-weight: 700; font-family: 'DM Mono'; }
@@ -124,6 +123,14 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .indi-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
 
   .reason-label { display: block; margin-bottom: 6px; font-size: 12px; text-align: left; }
+
+  /* プロップ設定用スタイル */
+  .prop-form-group { margin-bottom: 12px; text-align: left; }
+  .prop-form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .prop-hint { font-size: 9px; color: var(--text-muted); margin-top: 4px; line-height: 1.3; }
+  .prop-preset-tab { flex: 1; padding: 8px; font-size: 12px; border-radius: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+  .prop-preset-tab.active { background: rgba(168,85,247,0.15); border-color: var(--prop-color); color: var(--prop-color); font-weight: bold; }
+  .prop-rules-preview { background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 11px; text-align: left; line-height: 1.6; }
 
   @media (orientation: landscape) {
     :root { --header-height: 40px; --nav-height: 46px; }
@@ -202,15 +209,92 @@ document.addEventListener('lwc-ready', _onLwcReady);
         <h3 style="color:var(--red);">🔴 アイアンマン (100回)</h3>
         <p>真の実力が試される過酷な100本ノック。</p>
       </div>
-      <div class="mode-card" onclick="startGame('fintokei')" style="border-left:3px solid var(--prop-color); background: rgba(168,85,247,0.05);">
-        <h3 style="color:var(--prop-color);">🏆 フィントケイ (Fintokei) 審査</h3>
-        <p>目標+80pips / 1トレ最大損失-50pips / 累積最大損失-100pips で合否判定を行います。</p>
+      <div class="mode-card" onclick="openPropSetup()" style="border-left:3px solid var(--prop-color); background: rgba(168,85,247,0.05);">
+        <h3 style="color:var(--prop-color);">🏆 プロップファーム審査</h3>
+        <p>資金・目標・損失制限を設定し、本番プロップ審査を想定したマネープレッシャートレーニングを行います。</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 3. メインアプリ画面（チャート＆操作） -->
+<!-- ★ 追加: プロップファーム設定モーダル（全画面） -->
+<div id="prop-setup-overlay" class="full-overlay" style="display:none; z-index:9500; background:var(--bg-panel);">
+  <div class="top-header" style="margin-top:0;">
+    <h2 style="color:var(--prop-color); font-size:18px; font-weight:900;">🏆 プロップ審査設定</h2>
+    <button class="btn" style="width:auto; padding:6px 12px; font-size:12px; border:1px solid var(--border);" onclick="closePropSetup()">✕ 閉じる</button>
+  </div>
+  
+  <div style="display:flex; gap:5px; margin-bottom:15px;">
+    <button class="btn prop-preset-tab active" onclick="switchPropPreset(0)" id="ptab-0">プリセット1</button>
+    <button class="btn prop-preset-tab" onclick="switchPropPreset(1)" id="ptab-1">プリセット2</button>
+    <button class="btn prop-preset-tab" onclick="switchPropPreset(2)" id="ptab-2">プリセット3</button>
+  </div>
+
+  <div style="background:var(--bg-panel); border-radius:12px;">
+    <div class="prop-form-group">
+      <label>プリセット名</label>
+      <input class="input-field" id="prop-name" placeholder="例: 1500万 チャレンジ" value="1500万 チャレンジ">
+    </div>
+    
+    <div style="display:flex; gap:10px;">
+      <div class="prop-form-group" style="flex:1;">
+        <label>口座通貨</label>
+        <select class="input-field" id="prop-currency" onchange="setPropCurrency(this.value)">
+          <option value="USD">🇺🇸 USD</option>
+          <option value="JPY" selected>🇯🇵 JPY</option>
+        </select>
+      </div>
+      <div class="prop-form-group" style="flex:1;">
+        <label id="prop-balance-lbl">初期資金 (¥)</label>
+        <input class="input-field" id="prop-balance" type="number" value="15000000" oninput="calcPropPipVal()">
+      </div>
+    </div>
+
+    <div class="prop-form-group" id="prop-usdjpy-group" style="display:flex;">
+      <label>USD/JPY レート（円建て計算用）</label>
+      <input class="input-field" id="prop-usdjpy" type="number" value="150" step="0.1" oninput="calcPropPipVal()">
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <div class="prop-form-group" style="flex:1;">
+        <label id="prop-lot-lbl">基準ロット</label>
+        <input class="input-field" id="prop-lot" type="number" value="0.01" step="0.01" oninput="calcPropPipVal()">
+      </div>
+      <div class="prop-form-group" style="flex:1;">
+        <label>🎯 1トレード許容リスク(%)</label>
+        <input class="input-field" id="prop-risk-pct" type="number" value="1" step="0.5" oninput="updatePropRulesPreview()">
+      </div>
+    </div>
+    <div class="prop-hint" id="prop-lot-hint" style="margin-top:-10px; margin-bottom:12px;">※実際はSL幅に合わせてリスク%から自動計算されます</div>
+
+    <div class="prop-form-group">
+      <label style="display:flex; justify-content:space-between;">
+        <span>1pip の価値 <span id="prop-pip-cur-lbl">($)</span></span>
+        <label style="font-size:10px; display:flex; align-items:center; gap:4px;"><input type="checkbox" id="prop-pip-manual" onchange="togglePipManual()">手動入力</label>
+      </label>
+      <input class="input-field" id="prop-pip-val" type="number" value="1.00" step="0.001" oninput="updatePropRulesPreview()" readonly style="background:var(--bg-hover);">
+      <div class="prop-hint" id="prop-pip-formula"></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="prop-form-group"><label>目標利益率 (%)</label><input class="input-field" id="prop-target" type="number" value="8" step="0.5" oninput="updatePropRulesPreview()"></div>
+      <div class="prop-form-group"><label>日次損失制限 (%)</label><input class="input-field" id="prop-daily-loss" type="number" value="5" step="0.5" oninput="updatePropRulesPreview()"></div>
+      <div class="prop-form-group"><label>総損失制限 (%)</label><input class="input-field" id="prop-max-loss" type="number" value="10" step="0.5" oninput="updatePropRulesPreview()"></div>
+      <div class="prop-form-group"><label>制限取引数</label><input class="input-field" id="prop-max-trades" type="number" value="30" oninput="updatePropRulesPreview()"></div>
+      <div class="prop-form-group" style="grid-column: span 2;"><label>最低取引数</label><input class="input-field" id="prop-min-trades" type="number" value="5" oninput="updatePropRulesPreview()"></div>
+    </div>
+
+    <div class="prop-rules-preview" id="prop-rules-preview">
+      <!-- Injected by JS -->
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn" onclick="savePropPreset()">💾 保存</button>
+      <button class="btn btn-primary" style="background:var(--prop-color); color:#fff;" onclick="startPropChallenge()">🚀 開始！</button>
+    </div>
+  </div>
+</div>
+
 <div id="app-screen">
   <header>
     <div class="header-left">
@@ -344,7 +428,28 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
   </div>
 
-  <!-- Settings Sheet -->
+  <!-- Settings & Stats Sheet -->
+  <div class="bottom-sheet" id="sheet-stats">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">📊 成績サマリー</div>
+      <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
+    </div>
+    <!-- プロップ用成績表示エリア -->
+    <div id="stats-prop-body" style="display:none; background:var(--bg-panel); padding:16px; border-radius:10px; border:1px solid rgba(168,85,247,0.3); margin-bottom:16px;"></div>
+    
+    <!-- 通常成績表示エリア -->
+    <div class="stat-grid" id="stats-normal-grid">
+      <div class="stat-box"><div class="stat-val" id="sheet-st-entry">0%</div><div class="stat-lbl">実行率</div></div>
+      <div class="stat-box"><div class="stat-val" id="sheet-st-acc">0%</div><div class="stat-lbl">正答率</div></div>
+      <div class="stat-box"><div class="stat-val" id="sheet-st-win">0%</div><div class="stat-lbl">勝率</div></div>
+      <div class="stat-box"><div class="stat-val" id="sheet-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--green);" id="sheet-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--red);" id="sheet-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
+    </div>
+    <button class="btn" style="border-color:var(--red); color:var(--red); margin-top:16px;" onclick="resetStats()">🗑 成績リセット</button>
+  </div>
+
   <div class="bottom-sheet" id="sheet-menu">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
@@ -376,9 +481,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <button class="nav-item" onclick="toggleSheet('sheet-tools', this)"><span class="nav-icon">✏️</span><span>Tools</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-scenario', this)"><span class="nav-icon">🎯</span><span>Plan</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-indi', this)"><span class="nav-icon">📈</span><span>Indi</span></button>
+    <button class="nav-item" onclick="toggleSheet('sheet-stats', this); updateTopStatsUI();"><span class="nav-icon">📋</span><span>Stats</span></button>
     <button class="nav-item" onclick="toggleSheet('sheet-menu', this)"><span class="nav-icon">⚙️</span><span>Menu</span></button>
   </nav>
-</div>
+</div> <!-- /#app-screen -->
 
 <!-- モーダル: TOP画面の詳細成績＆期間ソート -->
 <div class="center-modal" id="modal-top-stats">
@@ -515,18 +621,21 @@ let scenarios = [], activePos = null;
 let scBuilder = { active: false, type: null, step: 0, entry: null, tp: null, sl: null, mouseX: 0, mouseY: 0 };
 let isPaMode = false, activePaSc = null;
 
-let ftkPnlPips = 0; let ftkPeakPnl = 0; 
+// ★ プロップ変数
+let propState = null;
+let propCurrency = 'JPY';
+let currentPropPreset = 0;
+const SAVE_KEY = 'trade_sim_mobile_save_v1';
+const FINTOKEI_SAVE_KEY = 'trade_sim_mobile_fintokei_v1';
+const PROP_SAVE_KEY = 'prop_presets_mobile_v1';
 
 let maSeriesList = [];
 let isMaVisible = false;
 let maColors = ['#60a5fa', '#fbbf24', '#f87171'];
 let maTypes = ['SMA', 'SMA', 'SMA'];
-let maVisible = [false, false, false]; // 初期は全てOFF
+let maVisible = [false, false, false]; 
 let volumeSeries = null;
 let isVolumeVisible = false;
-
-const SAVE_KEY = 'trade_sim_mobile_save_v1';
-const FINTOKEI_SAVE_KEY = 'trade_sim_mobile_fintokei_v1';
 
 function requestFullScreen() {
   const docEl = document.documentElement;
@@ -536,7 +645,6 @@ function requestFullScreen() {
   }
 }
 
-// 速度コントローラーの同期
 function syncSpeed(val) {
   const el1 = document.getElementById('cfg-speed');
   const el2 = document.getElementById('fab-speed');
@@ -625,8 +733,8 @@ function saveProgress() {
   if (appMode === 'practice10' || appMode === 'challenge100') {
     const data = { mode: appMode, playsDone: playsDone, maxPlays: maxPlays, symbol: activeSymbol };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-  } else if (appMode === 'fintokei') {
-    const data = { mode: 'fintokei', playsDone: playsDone, symbol: activeSymbol, ftkPnlPips: ftkPnlPips, ftkPeakPnl: ftkPeakPnl };
+  } else if (appMode === 'fintokei' && propState) {
+    const data = { mode: 'fintokei', playsDone: playsDone, symbol: activeSymbol, propState: propState };
     localStorage.setItem(FINTOKEI_SAVE_KEY, JSON.stringify(data));
   }
 }
@@ -647,8 +755,9 @@ function checkSavedProgress() {
   if (ftkSave) {
     try {
       const data = JSON.parse(ftkSave);
-      if (data.playsDone > 0) {
-        document.getElementById('resume-desc').innerHTML = `<b>🏆 フィントケイ審査</b> の進行中データが見つかりました。<br>累計損益: <b style="color:${data.ftkPnlPips>=0?'var(--green)':'var(--red)'}">${data.ftkPnlPips>=0?'+':''}${data.ftkPnlPips.toFixed(1)} pips</b>`;
+      if (data.playsDone > 0 && data.propState && !data.propState.isFailed && !data.propState.isPassed) {
+        const pnl = data.propState.currentBalance - data.propState.balance;
+        document.getElementById('resume-desc').innerHTML = `<b>🏆 プロップファーム審査</b> の進行中データが見つかりました。<br>損益: <b style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${(data.propState.isJPY?Math.round(pnl):pnl.toFixed(2))}</b>`;
         panel.style.display = 'flex'; panel._saveType = 'fintokei'; return;
       }
     } catch(e) {}
@@ -677,15 +786,15 @@ function resumeSavedGame() {
   else if (appMode === 'challenge100') maxPlays = 100;
   else if (appMode === 'fintokei') {
     maxPlays = Infinity;
-    ftkPnlPips = data.ftkPnlPips;
-    ftkPeakPnl = data.ftkPeakPnl;
+    propState = data.propState;
+    propCurrency = propState.currency || 'USD';
   }
   
   const displaySym = document.getElementById('top-symbol-sel').options[document.getElementById('top-symbol-sel').selectedIndex].text;
   const badge = document.getElementById('mode-badge');
   if(appMode==='practice10') badge.innerText=`DRILL (${playsDone}/10)`; 
   else if(appMode==='challenge100') badge.innerText=`IRONMAN (${playsDone}/100)`;
-  else if(appMode==='fintokei') badge.innerText='FINTOKEI';
+  else if(appMode==='fintokei') badge.innerText='PROP FIRM';
   
   document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
   document.getElementById('top-screen').style.display = 'none';
@@ -728,7 +837,7 @@ function startGame(mode) {
   if(mode==='free') { badge.innerText='FREE'; maxPlays = Infinity; }
   else if(mode==='practice10') { badge.innerText='DRILL (0/10)'; maxPlays = 10; }
   else if(mode==='challenge100') { badge.innerText='IRONMAN (0/100)'; maxPlays = 100; }
-  else if(mode==='fintokei') { badge.innerText='FINTOKEI'; maxPlays = Infinity; ftkPnlPips=0; ftkPeakPnl=0; }
+  else if(mode==='fintokei') { badge.innerText='PROP FIRM'; maxPlays = Infinity; ftkPnlPips=0; ftkPeakPnl=0; }
   
   document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
   document.getElementById('top-screen').style.display = 'none';
@@ -744,6 +853,241 @@ function startGame(mode) {
   }
   resetFabControls();
   loadNewProblem();
+}
+
+// ====== プロップファーム設定 ======
+function loadPropPresets() {
+  const saved = localStorage.getItem(PROP_SAVE_KEY);
+  return saved ? JSON.parse(saved) : [{}, {}, {}];
+}
+function savePropPresets(presets) {
+  localStorage.setItem(PROP_SAVE_KEY, JSON.stringify(presets));
+}
+function propCurLabel() { return propCurrency === 'JPY' ? '(¥)' : '($)'; }
+function setPropCurrency(cur) {
+  propCurrency = cur;
+  const isJPY = cur === 'JPY';
+  document.getElementById('prop-usdjpy-group').style.display = isJPY ? 'flex' : 'none';
+  document.getElementById('prop-balance-lbl').innerText = `初期資金 ${propCurLabel()}`;
+  document.getElementById('prop-pip-cur-lbl').innerText = propCurLabel();
+  calcPropPipVal();
+}
+function togglePipManual() {
+  const isManual = document.getElementById('prop-pip-manual').checked;
+  document.getElementById('prop-pip-val').readOnly = !isManual;
+  document.getElementById('prop-pip-val').style.background = isManual ? 'var(--bg-panel)' : 'var(--bg-hover)';
+  if (!isManual) calcPropPipVal();
+}
+function calcPropPipVal() {
+  const isManual = document.getElementById('prop-pip-manual') && document.getElementById('prop-pip-manual').checked;
+  if (isManual) return;
+  activeSymbol = document.getElementById('top-symbol-sel').value;
+  const lot = parseFloat(document.getElementById('prop-lot').value) || 0.01;
+  const usdJpy = parseFloat(document.getElementById('prop-usdjpy').value) || 150;
+  const isJPY = propCurrency === 'JPY';
+  const isXAU = activeSymbol === 'PAXGUSDT' || activeSymbol === 'XAUUSDT';
+  const ozPerLot = isXAU ? 100 : 1;
+  let pipValUSD = lot * ozPerLot;
+  let pipVal = isJPY ? pipValUSD * usdJpy : pipValUSD;
+  document.getElementById('prop-pip-val').value = pipVal.toFixed(isJPY ? 1 : 4);
+  updatePropRulesPreview();
+}
+function getPropFormValues() {
+  return {
+    name: document.getElementById('prop-name').value || 'プリセット' + (currentPropPreset+1),
+    currency: propCurrency,
+    balance: parseFloat(document.getElementById('prop-balance').value) || 15000000,
+    lot: parseFloat(document.getElementById('prop-lot').value) || 0.01,
+    usdJpy: parseFloat(document.getElementById('prop-usdjpy').value) || 150,
+    pipVal: parseFloat(document.getElementById('prop-pip-val').value) || 1,
+    target: parseFloat(document.getElementById('prop-target').value) || 8,
+    dailyLoss: parseFloat(document.getElementById('prop-daily-loss').value) || 5,
+    maxLoss: parseFloat(document.getElementById('prop-max-loss').value) || 10,
+    maxTrades: parseInt(document.getElementById('prop-max-trades').value) || 30,
+    minTrades: parseInt(document.getElementById('prop-min-trades').value) || 5,
+    riskPct: parseFloat(document.getElementById('prop-risk-pct').value) || 1,
+  };
+}
+function setPropFormValues(preset) {
+  if (!preset || Object.keys(preset).length === 0) {
+    document.getElementById('prop-name').value = '1500万 チャレンジ';
+    setPropCurrency('JPY');
+    document.getElementById('prop-currency').value = 'JPY';
+    document.getElementById('prop-balance').value = 15000000;
+    document.getElementById('prop-lot').value = 0.01;
+    document.getElementById('prop-usdjpy').value = 150;
+    document.getElementById('prop-pip-val').value = 1;
+    document.getElementById('prop-target').value = 8;
+    document.getElementById('prop-daily-loss').value = 5;
+    document.getElementById('prop-max-loss').value = 10;
+    document.getElementById('prop-max-trades').value = 30;
+    document.getElementById('prop-min-trades').value = 5;
+    document.getElementById('prop-risk-pct').value = 1;
+    updatePropRulesPreview();
+    return;
+  }
+  document.getElementById('prop-name').value = preset.name || '';
+  if (preset.currency) { propCurrency = preset.currency; document.getElementById('prop-currency').value = preset.currency; setPropCurrency(preset.currency); } 
+  else { setPropCurrency('JPY'); document.getElementById('prop-currency').value = 'JPY'; }
+  document.getElementById('prop-balance').value = preset.balance || 15000000;
+  document.getElementById('prop-lot').value = preset.lot || 0.01;
+  document.getElementById('prop-usdjpy').value = preset.usdJpy || 150;
+  document.getElementById('prop-pip-val').value = preset.pipVal || 1;
+  document.getElementById('prop-target').value = preset.target || 8;
+  document.getElementById('prop-daily-loss').value = preset.dailyLoss || 5;
+  document.getElementById('prop-max-loss').value = preset.maxLoss || 10;
+  document.getElementById('prop-max-trades').value = preset.maxTrades || 30;
+  document.getElementById('prop-risk-pct').value = preset.riskPct || 1;
+  updatePropRulesPreview();
+}
+function updatePropRulesPreview() {
+  const v = getPropFormValues();
+  const cs = propCurrency === 'JPY' ? '¥' : '$';
+  const fmt = (n) => propCurrency === 'JPY' ? cs + Math.round(n).toLocaleString() : cs + n.toFixed(0);
+  const targetAmt = v.balance * v.target / 100;
+  const dailyAmt  = v.balance * v.dailyLoss / 100;
+  const maxAmt    = v.balance * v.maxLoss / 100;
+  const riskAmt   = v.balance * v.riskPct / 100;
+  const riskPipsEst = v.pipVal > 0 ? (riskAmt / v.pipVal).toFixed(1) : '—';
+  document.getElementById('prop-rules-preview').innerHTML = `
+    <span style="color:var(--green)">✅ 合格条件</span><br>
+    　• 利益 <b>${fmt(targetAmt)}（${v.target}%）</b><br>
+    <span style="color:var(--red)">❌ 失格条件</span><br>
+    　• 1トレード損失 <b>${fmt(dailyAmt)}（${v.dailyLoss}%）</b><br>
+    　• 累計損失 <b>${fmt(maxAmt)}（${v.maxLoss}%）</b><br>
+    <span style="color:#c084fc">🎯 ロット自動調整</span><br>
+    　• 常に <b>${fmt(riskAmt)}（${v.riskPct}%）</b>のリスク<br>
+    　• SL幅 ${riskPipsEst}pips 相当
+  `;
+}
+function switchPropPreset(idx) {
+  currentPropPreset = idx;
+  document.querySelectorAll('.prop-preset-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  const presets = loadPropPresets();
+  setPropFormValues(presets[idx] || {});
+}
+function savePropPreset() {
+  const presets = loadPropPresets();
+  presets[currentPropPreset] = getPropFormValues();
+  savePropPresets(presets);
+  const tab = document.getElementById('ptab-' + currentPropPreset);
+  tab.innerText = presets[currentPropPreset].name.slice(0, 8) || 'プリセット'+(currentPropPreset+1);
+  alert('プリセットを保存しました！');
+}
+function openPropSetup() {
+  const presets = loadPropPresets();
+  [0,1,2].forEach(i => {
+    const tab = document.getElementById('ptab-' + i);
+    if (presets[i] && presets[i].name) tab.innerText = presets[i].name.slice(0, 8);
+    else tab.innerText = 'プリセット' + (i+1);
+  });
+  switchPropPreset(0);
+  calcPropPipVal();
+  document.getElementById('prop-setup-overlay').style.display = 'flex';
+}
+function closePropSetup() {
+  document.getElementById('prop-setup-overlay').style.display = 'none';
+}
+function startPropChallenge() {
+  const v = getPropFormValues();
+  if (!v.name) { alert('プリセット名を入力してください。'); return; }
+  closePropSetup();
+  activeSymbol = document.getElementById('top-symbol-sel').value;
+  propState = {
+    ...v,
+    currentBalance: v.balance,
+    totalPips: 0, lastTradePips: 0, tradesDone: 0, peakBalance: v.balance, maxDD: 0,
+    isFailed: false, isPassed: false, failReason: '',
+    curSymbol: v.currency === 'JPY' ? '¥' : '$',
+    isJPY: v.currency === 'JPY',
+  };
+  appMode = 'fintokei';
+  maxPlays = v.maxTrades;
+  playsDone = 0;
+  
+  const displaySym = document.getElementById('top-symbol-sel').options[document.getElementById('top-symbol-sel').selectedIndex].text;
+  document.getElementById('mode-badge').innerHTML = `<span style="color:var(--prop-color)">FINTOKEI</span>`;
+  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
+  document.getElementById('top-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  
+  if(!chart) initChartSystem(); 
+  else {
+    const w = document.getElementById('chart-container').clientWidth;
+    const h = document.getElementById('chart-container').clientHeight;
+    chart.applyOptions({ width: w, height: h }); resizeCanvas(w, h);
+  }
+  resetFabControls();
+  loadNewProblem();
+}
+
+function updatePropStatsPanel() {
+  if (!propState) return;
+  const cs = propState.curSymbol || '$';
+  const fmt = (n) => propState.isJPY ? cs + Math.round(n).toLocaleString() : cs + Math.abs(n).toFixed(2);
+  const pnl = propState.currentBalance - propState.balance;
+  const targetAmount = propState.balance * propState.target / 100;
+  const dailyLossLimit = propState.balance * propState.dailyLoss / 100;
+  const totalLossLimit = propState.balance * propState.maxLoss / 100;
+  const totalLossAmt = Math.max(0, propState.balance - propState.currentBalance);
+  const lastTradeLoss = (propState.lastTradePips < 0 && propState.lastTradeRiskAmt)
+    ? propState.lastTradeRiskAmt
+    : (propState.lastTradePips < 0 ? Math.abs(propState.lastTradePips * propState.pipVal) : 0);
+
+  const targetPct = Math.min(100, Math.max(0, (pnl / targetAmount) * 100));
+  const ddPct = Math.min(100, Math.max(0, (totalLossAmt / totalLossLimit) * 100));
+  const dailyPct = Math.min(100, Math.max(0, (lastTradeLoss / dailyLossLimit) * 100));
+
+  const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  let statusClass, statusText;
+  if (ddPct > 70 || dailyPct > 70) { statusClass = 'fail'; statusText = '⚠️ 危険ゾーン！'; } 
+  else if (pnl >= targetAmount * 0.6) { statusClass = 'ok'; statusText = '✅ 目標ペース良好！'; } 
+  else { statusClass = 'warn'; statusText = '📈 目標に向けて進行中'; }
+
+  const pBar = (pct, color) => `<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:3px 0 7px;"><div style="height:100%;width:${pct}%;background:${color};border-radius:3px;"></div></div>`;
+
+  document.getElementById('stats-prop-body').innerHTML = `
+    <div style="font-size:10px;color:var(--prop-color);font-weight:700;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;">🏆 ${propState.name}</div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span style="color:var(--text-muted)">残高</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:${pnlColor}">${cs}${propState.isJPY ? Math.round(propState.currentBalance).toLocaleString() : propState.currentBalance.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span style="color:var(--text-muted)">損益</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:${pnlColor}">${pnl>=0?'+':''}${propState.isJPY ? cs+Math.round(pnl).toLocaleString() : cs+pnl.toFixed(2)} (${pnl>=0?'+':''}${(pnl/propState.balance*100).toFixed(2)}%)</span></div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">目標達成 ${targetPct.toFixed(0)}% → ${propState.isJPY ? cs+Math.round(targetAmount).toLocaleString() : cs+targetAmount.toFixed(0)}</div>
+    ${pBar(targetPct, 'var(--green)')}
+    <div style="font-size:10px;color:var(--text-muted);">ドローダウン ${ddPct.toFixed(0)}% / 上限 ${propState.isJPY ? cs+Math.round(totalLossLimit).toLocaleString() : cs+totalLossLimit.toFixed(0)}</div>
+    ${pBar(ddPct, ddPct > 70 ? 'var(--red)' : ddPct > 40 ? '#fbbf24' : '#60a5fa')}
+    <div style="font-size:10px;color:var(--text-muted);">直近損失 / 日次制限 ${propState.isJPY ? cs+Math.round(dailyLossLimit).toLocaleString() : cs+dailyLossLimit.toFixed(0)}</div>
+    ${pBar(dailyPct, dailyPct > 70 ? 'var(--red)' : '#fbbf24')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px;">
+      <div style="background:var(--bg-input);border-radius:5px;padding:6px;text-align:center;"><div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">${propState.tradesDone}</div><div style="font-size:9px;color:var(--text-muted);">取引回数</div></div>
+      <div style="background:var(--bg-input);border-radius:5px;padding:6px;text-align:center;"><div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">${maxPlays - propState.tradesDone}</div><div style="font-size:9px;color:var(--text-muted);">残り回数</div></div>
+    </div>
+  `;
+}
+
+function showPropFinal(passed) {
+  document.getElementById('modal-result').style.display = 'none';
+  const m = document.getElementById('modal-final-report');
+  const cs = propState.curSymbol || '$';
+  const isJPY = propState.isJPY;
+  const fmtAmt = (n) => isJPY ? cs + Math.round(n).toLocaleString() : cs + Math.abs(n).toFixed(2);
+  const pnl = propState.currentBalance - propState.balance;
+  const pnlPct = (pnl / propState.balance * 100).toFixed(2);
+
+  document.getElementById('final-stat-grid').innerHTML = `
+    <div style="grid-column:span 2; font-size:18px; font-weight:bold; color:${passed?'var(--green)':'var(--red)'}; margin-bottom:10px;">
+      ${passed ? '🎉 CHALLENGE PASSED!' : '💥 FAILED'}
+    </div>
+    <div class="stat-box" style="grid-column:span 2; padding:12px; font-size:12px; color:var(--text); text-align:left;">
+      ${passed ? 'おめでとうございます！プロップ審査をクリアしました。' : '失格となりました。<br><b style="color:var(--red)">' + propState.failReason + '</b>'}
+    </div>
+    <div class="stat-box"><div class="stat-val" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${fmtAmt(propState.currentBalance)}</div><div class="stat-lbl">最終残高</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtAmt(pnl)}</div><div class="stat-lbl">純損益 (${pnl>=0?'+':''}${pnlPct}%)</div></div>
+    <div class="stat-box"><div class="stat-val">+${fmtAmt(propState.balance*propState.target/100)}</div><div class="stat-lbl">目標額 (${propState.target}%)</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--red)">${fmtAmt(propState.maxDD)}</div><div class="stat-lbl">最大DD</div></div>
+    <div class="stat-box" style="grid-column:span 2;"><div class="stat-val">${propState.tradesDone} 回</div><div class="stat-lbl">取引回数</div></div>
+  `;
+  
+  if (currentSalonUserName) { document.getElementById('final-submit-username').value = currentSalonUserName + " さん"; }
+  m.style.display = 'flex';
 }
 
 let currentActiveSheet = null;
@@ -1212,8 +1556,7 @@ function setupPointerEvents() {
       e.stopPropagation();
       if(e.cancelable) e.preventDefault();
       
-      // チャタリング防止
-      if (Date.now() - lastTapTime < 400) return; 
+      if (Date.now() - lastTapTime < 400) return; // チャタリング防止
       
       if (!isScClickCanceled && coords.clientX != null) {
         lastTapTime = Date.now();
@@ -1420,10 +1763,25 @@ function submitReason() {
   const defaultMode = document.getElementById('cfg-default-mode').value;
   const expTime = scBuilder.tp ? Math.max(scBuilder.entry.time, scBuilder.tp.time, scBuilder.sl.time) : null;
   
+  // ★ プロップ用の自動ロット計算
+  let autoLot = null, autoPipVal = null, autoRiskAmt = null;
+  if (appMode === 'fintokei' && propState && scBuilder.entry && scBuilder.sl && !isSkip) {
+    const slPips = Math.abs(scBuilder.entry.price - scBuilder.sl.price);
+    if (slPips > 0) {
+      autoRiskAmt = propState.currentBalance * propState.riskPct / 100;
+      const isXAU = activeSymbol === 'PAXGUSDT' || activeSymbol === 'XAUUSDT';
+      const ozPerLot = isXAU ? 100 : 1;
+      const pipValPerStdLot = ozPerLot * (propState.isJPY ? (propState.usdJpy || 150) : 1);
+      autoLot = autoRiskAmt / (slPips * pipValPerStdLot);
+      autoPipVal = autoLot * pipValPerStdLot; 
+    }
+  }
+  
   scenarios.push({
     id: Date.now(), type: scBuilder.type, mode: defaultMode, reason: finalReason,
     entry: scBuilder.entry, tp: scBuilder.tp, sl: scBuilder.sl,
-    expireTime: expTime, expired: false, triggered: false, lastSkipTime: null
+    expireTime: expTime, expired: false, triggered: false, lastSkipTime: null,
+    autoLot: autoLot, autoPipVal: autoPipVal, autoRiskAmt: autoRiskAmt
   });
   
   document.getElementById('modal-reason').style.display='none';
@@ -1434,12 +1792,24 @@ function submitReason() {
 function renderScenarios() {
   const container = document.getElementById('sc-cards-container'); container.innerHTML = '';
   scenarios.forEach(sc => {
-    let selectHtml = '';
+    let selectHtml = ''; let propInfoHtml = '';
     if(sc.type !== 'skip') {
       selectHtml = `<select class="input-field" style="padding:6px; margin-top:8px; margin-bottom:0;" onchange="updateScMode(${sc.id}, this.value)" ${sc.expired ? 'disabled' : ''}>
         <option value="limit" ${sc.mode==='limit'?'selected':''}>⚡ 指値</option>
         <option value="pa" ${sc.mode==='pa'?'selected':''}>👀 PA確認</option>
       </select>`;
+      
+      // プロップモード用のロット表示
+      if (appMode === 'fintokei' && propState && sc.autoLot != null) {
+        const cs = propState.curSymbol || '$';
+        const fmtAmt = (n) => propState.isJPY ? cs + Math.round(n).toLocaleString() : cs + n.toFixed(2);
+        const lotDisp = sc.autoLot < 0.001 ? sc.autoLot.toFixed(5) : sc.autoLot < 0.01 ? sc.autoLot.toFixed(4) : sc.autoLot.toFixed(3);
+        const slPips = Math.abs(sc.entry.price - sc.sl.price).toFixed(2);
+        propInfoHtml = `<div style="margin-top:8px; padding:8px 10px; border-radius:6px; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.4); font-size:11px; color:#c084fc; display:flex; justify-content:space-between; align-items:center;">
+          <span>🎯 計算ロット: <b style="font-family:'DM Mono',monospace; font-size:12px;">${lotDisp} lot</b></span>
+          <span style="color:var(--text-muted);">SL ${slPips}pips → リスク <b style="color:#f87171">${fmtAmt(sc.autoRiskAmt)}</b></span>
+        </div>`;
+      }
     }
     const expLabel = sc.expired ? `<span style="color:var(--red); font-size:10px;">(終了)</span>` : ``;
     let text = sc.type==='skip' ? "見送り" : `Entry: <span class="sc-val">${sc.entry.price.toFixed(2)}</span> | TP: <span class="sc-val" style="color:var(--green)">${sc.tp.price.toFixed(2)}</span> | SL: <span class="sc-val" style="color:var(--red)">${sc.sl.price.toFixed(2)}</span>`;
@@ -1447,6 +1817,7 @@ function renderScenarios() {
       <b>${sc.type.toUpperCase()}</b> ${expLabel}<br>
       <span style="color:var(--text-muted)">${text}</span><br>
       💡 ${sc.reason}
+      ${propInfoHtml}
       ${selectHtml}
     </div>`;
   });
@@ -1644,29 +2015,56 @@ function endSim(title, pips) {
   
   let descText = pips!=null ? `${pips>0?'+':''}${pips.toFixed(2)} pips` : '結果なし (見送り/ノーエントリー)';
   
-  if(appMode === 'fintokei' && pips != null) {
-    ftkPnlPips += pips;
-    if(ftkPnlPips > ftkPeakPnl) ftkPeakPnl = ftkPnlPips;
-    const currentDD = ftkPeakPnl - ftkPnlPips;
+  if(appMode === 'fintokei' && pips != null && propState) {
+    const usedPipVal = (activePos && activePos.autoPipVal != null) ? activePos.autoPipVal : propState.pipVal;
+    const dollarPnL = pips * usedPipVal;
     
-    let ftkStatus = `<br><span style="color:var(--prop-color);">🏆 Fintokei 累計: ${ftkPnlPips>0?'+':''}${ftkPnlPips.toFixed(1)} pips</span>`;
+    propState.currentBalance += dollarPnL;
+    propState.totalPips += pips;
+    propState.lastTradePips = pips;
+    propState.lastTradeRiskAmt = Math.abs(dollarPnL);
+    propState.tradesDone++;
+    
+    if (propState.currentBalance > propState.peakBalance) propState.peakBalance = propState.currentBalance;
+    const dd = propState.peakBalance - propState.currentBalance;
+    if (dd > propState.maxDD) propState.maxDD = dd;
+    
+    const cs = propState.curSymbol || '$';
+    const fmtAmt = (n) => propState.isJPY ? cs + Math.round(n).toLocaleString() : cs + Math.abs(n).toFixed(2);
+    
+    const targetAmount = propState.balance * propState.target / 100;
+    const totalLossLimit = propState.balance * propState.maxLoss / 100;
+    const dailyLossLimit = propState.balance * propState.dailyLoss / 100;
+    
+    const pnl = propState.currentBalance - propState.balance;
+    const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    
+    let ftkStatus = `<br><span style="color:var(--prop-color);">🏆 プロップファーム 累計: <b style="color:${pnlColor}">${pnl>=0?'+':''}${fmtAmt(pnl)}</b></span>`;
     const alertDiv = document.getElementById('fintokei-alert');
     alertDiv.style.display = 'block';
     
-    if (pips <= -50) {
+    if (pips < 0 && Math.abs(dollarPnL) >= dailyLossLimit) {
+      propState.isFailed = true; propState.failReason = `日次損失制限 ${fmtAmt(dailyLossLimit)} を超過`;
       alertDiv.style.background = 'rgba(248,113,113,0.1)'; alertDiv.style.color = 'var(--red)';
-      alertDiv.innerText = '❌ 失格: 1トレードの損失が50pipsを超えました';
-    } else if (currentDD >= 100) {
+      alertDiv.innerText = '❌ 失格: 1日の損失制限を超えました';
+    } else if (dd >= totalLossLimit) {
+      propState.isFailed = true; propState.failReason = `総損失制限 ${fmtAmt(totalLossLimit)} を超過`;
       alertDiv.style.background = 'rgba(248,113,113,0.1)'; alertDiv.style.color = 'var(--red)';
-      alertDiv.innerText = '❌ 失格: 累積ドローダウンが100pipsを超えました';
-    } else if (ftkPnlPips >= 80) {
+      alertDiv.innerText = '❌ 失格: 累積ドローダウン制限を超えました';
+    } else if (pnl >= targetAmount && propState.tradesDone >= propState.minTrades) {
+      propState.isPassed = true;
       alertDiv.style.background = 'rgba(74,222,128,0.1)'; alertDiv.style.color = 'var(--green)';
-      alertDiv.innerText = '🎉 合格: 目標利益の+80pipsを達成しました！';
+      alertDiv.innerText = '🎉 合格: 目標利益を達成しました！';
+    } else if (propState.tradesDone >= propState.maxTrades) {
+      propState.isFailed = true; propState.failReason = `${propState.maxTrades}回以内に目標利益を達成できませんでした`;
+      alertDiv.style.background = 'rgba(248,113,113,0.1)'; alertDiv.style.color = 'var(--red)';
+      alertDiv.innerText = '❌ 失格: 制限取引数を超過しました';
     } else {
       alertDiv.style.background = 'rgba(168,85,247,0.1)'; alertDiv.style.color = 'var(--prop-color)';
-      alertDiv.innerText = `進行中... 目標まであと ${(80 - ftkPnlPips).toFixed(1)} pips`;
+      alertDiv.innerText = `進行中... 目標まであと ${fmtAmt(targetAmount - pnl)}`;
     }
     descText += ftkStatus;
+    localStorage.setItem(FINTOKEI_SAVE_KEY, JSON.stringify({ mode: 'fintokei', playsDone: propState.tradesDone, symbol: activeSymbol, propState: propState }));
   } else {
     document.getElementById('fintokei-alert').style.display = 'none';
   }
@@ -1676,12 +2074,14 @@ function endSim(title, pips) {
   
   if(pips!=null) recordResult(true, pips>0, pips); else if(scenarios.some(s=>s.type==='skip')) recordResult(false, false, 0);
   
-  if(appMode !== 'free' && appMode !== 'live') { 
+  if(appMode !== 'free' && appMode !== 'live' && appMode !== 'fintokei') { 
     playsDone++; 
     saveProgress(); 
     const badge = document.getElementById('mode-badge');
     if(appMode==='practice10') badge.innerText = `DRILL (${playsDone}/10)`; 
     else if(appMode==='challenge100') badge.innerText = `IRONMAN (${playsDone}/100)`;
+  } else if (appMode === 'fintokei') {
+    playsDone = propState ? propState.tradesDone : 0;
   }
   
   updateTopStatsUI();
@@ -1758,10 +2158,9 @@ async function executeSubmitDiscordFinal(btn) {
 
 function reviewChart() {
   document.getElementById('modal-result').style.display = 'none';
-  const fabControls = document.getElementById('fab-controls');
-  fabControls.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
-  document.getElementById('fab-wrapper').style.display = 'flex';
-  document.getElementById('fab-speed-ctrl').style.display = 'none';
+  const fab = document.getElementById('fab-controls');
+  fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
+  fab.style.display = 'flex';
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
 }
 
@@ -1849,6 +2248,10 @@ async function executeSubmitDiscord(btn) {
 }
 
 function nextProblem() { 
+  if(appMode === 'fintokei' && propState && (propState.isFailed || propState.isPassed)) {
+    showPropFinal(propState.isPassed);
+    return;
+  }
   if(appMode !== 'free' && appMode !== 'live' && playsDone >= maxPlays && appMode !== 'fintokei') {
     showFinalReportModal();
     return;
