@@ -50,6 +50,11 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .top-title { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 900; }
   .top-title span { color: var(--accent); }
   
+  /* Resume Panel (セーブデータ復帰用) */
+  #resume-panel { background: rgba(200, 241, 53, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none; flex-direction: column; gap: 8px; }
+  #resume-title { font-size: 14px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  #resume-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
   .mode-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: left; cursor: pointer; }
   .mode-card:active { background: var(--bg-hover); }
   .mode-card h3 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
@@ -82,13 +87,10 @@ document.addEventListener('lwc-ready', _onLwcReady);
   
   .bottom-sheet { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85dvh; background: var(--bg-sheet); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 120; padding: 16px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.8); overflow-y: auto; }
   .bottom-sheet.open { transform: translateY(0); }
-  
-  /* ★ ボトムシートのヘッダー・閉じるボタン */
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
   .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
   .sheet-title { font-size: 16px; font-weight: 700; margin: 0; color:var(--text); }
   .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-  .sheet-close-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
   
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .tool-btn { aspect-ratio: 1; border-radius: 12px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; color: var(--text); }
@@ -113,7 +115,6 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .stat-box { background: var(--bg-panel); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
   .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono'; }
   .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-
   .indi-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 
   @media (orientation: landscape) {
@@ -156,6 +157,16 @@ document.addEventListener('lwc-ready', _onLwcReady);
 
   <div class="top-content-wrapper">
     <div>
+      <!-- Resume Panel -->
+      <div id="resume-panel">
+        <div id="resume-title">🔄 中断データがあります</div>
+        <div id="resume-desc">進行中のチャレンジデータが見つかりました。<br>続きから再開できます。</div>
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <button class="btn btn-primary" onclick="resumeSavedGame()" style="padding:10px;">再開する</button>
+          <button class="btn" onclick="clearSavedGame()" style="padding:10px; background:rgba(248,113,113,0.1); color:var(--red); border-color:var(--red);">破棄</button>
+        </div>
+      </div>
+
       <div style="margin-bottom:16px;">
         <label style="font-size:12px; color:var(--text-muted);">通貨ペア選択</label>
         <select id="top-symbol-sel" class="input-field" style="margin-top:6px; font-family:'DM Mono';">
@@ -227,7 +238,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
 
     <div id="fab-controls">
-      <!-- Controller contents injected via JS -->
+      <!-- Injected by JS -->
     </div>
   </main>
 
@@ -241,7 +252,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
     </div>
     <div class="tool-grid">
-      <div class="tool-btn active" data-tool="cursor"><div>👆</div><span class="tool-lbl">選択</span></div>
+      <div class="tool-btn active" data-tool="cursor"><div>👆</div><span class="tool-lbl">選択/移動</span></div>
       <div class="tool-btn" data-tool="trendline"><div>／</div><span class="tool-lbl">ﾄﾚﾝﾄﾞ</span></div>
       <div class="tool-btn" data-tool="eray"><div>↗️</div><span class="tool-lbl">延長線</span></div>
       <div class="tool-btn" data-tool="hline"><div>―</div><span class="tool-lbl">水平線</span></div>
@@ -257,6 +268,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div class="color-btn" style="background:#60a5fa;" data-color="#60a5fa"></div>
       <div class="color-btn" style="background:#c8f135;" data-color="#c8f135"></div>
       <div style="display:flex; gap:6px;">
+        <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="undoDraw()">↩️ 1つ戻す</button>
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--text-muted);" onclick="deleteSelectedShape()">🗑️ 選択削除</button>
         <button class="btn" style="padding:6px 10px; font-size:11px; width:auto; border-color:var(--red); color:var(--red);" onclick="clearDraw()">🧹 全消去</button>
       </div>
@@ -422,6 +434,7 @@ let isSimulating = false, simTimeout = null;
 let activeSymbol = 'BTCUSDT';
 let appMode = 'free';
 let chartMarkers = [];
+let playsDone = 0, maxPlays = Infinity;
 
 const canvas = document.getElementById('canvas-overlay');
 let ctx = canvas.getContext('2d');
@@ -445,6 +458,9 @@ let maVisible = [true, true, true];
 let volumeSeries = null;
 let isVolumeVisible = false;
 
+const SAVE_KEY = 'trade_sim_mobile_save_v1';
+const FINTOKEI_SAVE_KEY = 'trade_sim_mobile_fintokei_v1';
+
 function requestFullScreen() {
   const docEl = document.documentElement;
   if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -454,7 +470,13 @@ function requestFullScreen() {
 }
 
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
-function _startInit() {}
+function _startInit() {
+  checkSavedProgress();
+  // 開発時スキップ用（本番はコメントアウトのまま）
+  // document.getElementById('login-overlay').style.display = 'none';
+  // document.getElementById('top-screen').style.display = 'flex';
+  // updateTopStatsUI();
+}
 
 async function attemptLogin(tryFullscreen = false) {
   if(tryFullscreen) requestFullScreen(); 
@@ -474,6 +496,7 @@ async function attemptLogin(tryFullscreen = false) {
       document.getElementById('top-screen').style.display = 'flex';
       document.getElementById('submit-username').value = currentSalonUserName + " さん";
       updateTopStatsUI();
+      checkSavedProgress();
     } else {
       errorDiv.innerText = "❌ 口座番号が無効です。"; errorDiv.style.display = 'block';
     }
@@ -525,6 +548,89 @@ function initChartSystem() {
   resetFabControls();
 }
 
+// ====== セーブ＆レジューム ======
+function saveProgress() {
+  if (appMode === 'practice10' || appMode === 'challenge100') {
+    const data = { mode: appMode, playsDone: playsDone, maxPlays: maxPlays, symbol: activeSymbol };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } else if (appMode === 'fintokei') {
+    const data = { mode: 'fintokei', playsDone: playsDone, symbol: activeSymbol, ftkPnlPips: ftkPnlPips, ftkPeakPnl: ftkPeakPnl };
+    localStorage.setItem(FINTOKEI_SAVE_KEY, JSON.stringify(data));
+  }
+}
+
+function checkSavedProgress() {
+  const panel = document.getElementById('resume-panel');
+  const normalSave = localStorage.getItem(SAVE_KEY);
+  if (normalSave) {
+    try {
+      const data = JSON.parse(normalSave);
+      if (data.playsDone > 0 && data.playsDone < data.maxPlays) {
+        document.getElementById('resume-desc').innerHTML = `<b>${data.mode === 'practice10' ? 'タクティカル・ドリル' : 'アイアンマン'}</b> の進行中データが見つかりました。<br>現在: <b style="color:var(--accent);">${data.playsDone} / ${data.maxPlays} 回</b>`;
+        panel.style.display = 'flex'; panel._saveType = 'normal'; return;
+      }
+    } catch(e) {}
+  }
+  const ftkSave = localStorage.getItem(FINTOKEI_SAVE_KEY);
+  if (ftkSave) {
+    try {
+      const data = JSON.parse(ftkSave);
+      if (data.playsDone > 0) {
+        document.getElementById('resume-desc').innerHTML = `<b>🏆 フィントケイ審査</b> の進行中データが見つかりました。<br>累計損益: <b style="color:${data.ftkPnlPips>=0?'var(--green)':'var(--red)'}">${data.ftkPnlPips>=0?'+':''}${data.ftkPnlPips.toFixed(1)} pips</b>`;
+        panel.style.display = 'flex'; panel._saveType = 'fintokei'; return;
+      }
+    } catch(e) {}
+  }
+  panel.style.display = 'none';
+}
+
+function clearSavedGame() {
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(FINTOKEI_SAVE_KEY);
+  document.getElementById('resume-panel').style.display = 'none';
+}
+
+function resumeSavedGame() {
+  const panel = document.getElementById('resume-panel');
+  let dataStr = panel._saveType === 'fintokei' ? localStorage.getItem(FINTOKEI_SAVE_KEY) : localStorage.getItem(SAVE_KEY);
+  if (!dataStr) return;
+  const data = JSON.parse(dataStr);
+  
+  appMode = data.mode;
+  playsDone = data.playsDone;
+  activeSymbol = data.symbol || 'BTCUSDT';
+  document.getElementById('top-symbol-sel').value = activeSymbol;
+  
+  if (appMode === 'practice10') maxPlays = 10;
+  else if (appMode === 'challenge100') maxPlays = 100;
+  else if (appMode === 'fintokei') {
+    maxPlays = Infinity;
+    ftkPnlPips = data.ftkPnlPips;
+    ftkPeakPnl = data.ftkPeakPnl;
+  }
+  
+  const displaySym = document.getElementById('top-symbol-sel').options[document.getElementById('top-symbol-sel').selectedIndex].text;
+  const badge = document.getElementById('mode-badge');
+  if(appMode==='practice10') badge.innerText=`DRILL (${playsDone}/10)`; 
+  else if(appMode==='challenge100') badge.innerText=`IRONMAN (${playsDone}/100)`;
+  else if(appMode==='fintokei') badge.innerText='FINTOKEI';
+  
+  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
+  document.getElementById('top-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  closeAllSheets();
+  
+  requestFullScreen();
+  if(!chart) initChartSystem(); 
+  else {
+    const w = document.getElementById('chart-container').clientWidth;
+    const h = document.getElementById('chart-container').clientHeight;
+    chart.applyOptions({ width: w, height: h }); resizeCanvas(w, h);
+  }
+  resetFabControls();
+  loadNewProblem();
+}
+
 function scrollToLatest() {
   chart.timeScale().scrollToRealTime();
 }
@@ -534,19 +640,23 @@ function goToTop() {
   document.getElementById('top-screen').style.display = 'flex';
   clearTimeout(simTimeout); isSimulating = false;
   updateTopStatsUI();
+  checkSavedProgress();
 }
 
 function startGame(mode) {
   requestFullScreen(); 
   appMode = mode; 
+  playsDone = 0; // 新規スタートなのでリセット
+  clearSavedGame(); // 新規スタートなのでセーブ破棄
+  
   activeSymbol = document.getElementById('top-symbol-sel').value;
   const displaySym = document.getElementById('top-symbol-sel').options[document.getElementById('top-symbol-sel').selectedIndex].text;
   
   const badge = document.getElementById('mode-badge');
-  if(mode==='free') badge.innerText='FREE'; 
-  else if(mode==='practice10') badge.innerText='DRILL'; 
-  else if(mode==='challenge100') badge.innerText='IRONMAN';
-  else if(mode==='fintokei') { badge.innerText='FINTOKEI'; ftkPnlPips=0; ftkPeakPnl=0; }
+  if(mode==='free') { badge.innerText='FREE'; maxPlays = Infinity; }
+  else if(mode==='practice10') { badge.innerText='DRILL (0/10)'; maxPlays = 10; }
+  else if(mode==='challenge100') { badge.innerText='IRONMAN (0/100)'; maxPlays = 100; }
+  else if(mode==='fintokei') { badge.innerText='FINTOKEI'; maxPlays = Infinity; ftkPnlPips=0; ftkPeakPnl=0; }
   
   document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
   document.getElementById('top-screen').style.display = 'none';
@@ -564,6 +674,7 @@ function startGame(mode) {
   loadNewProblem();
 }
 
+// ====== UI Sheet ======
 let currentActiveSheet = null;
 function toggleSheet(sheetId, btnElement) {
   const sheet = document.getElementById(sheetId);
@@ -658,7 +769,7 @@ function generateDummyData() {
   const fake = [];
   let time = Math.floor(Date.now()/1000) - 86400*30;
   let price = activeSymbol === 'BTCUSDT' ? 60000 : 2300;
-  for(let i=0; i<1000; i++){
+  for(let i=0; i<3000; i++){
     time += 900;
     const open = price + (Math.random()-0.5)*10;
     const high = open + Math.random()*20;
@@ -672,7 +783,6 @@ function generateDummyData() {
 
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
-  document.getElementById('fab-controls').style.display = 'none';
   document.getElementById('action-panel').style.display = 'none';
   document.getElementById('modal-result').style.display = 'none';
   resetFabControls();
@@ -787,16 +897,16 @@ function hitTest(cx, cy) {
     if (x1 == null || y1 == null) continue;
 
     if (s.type === 'hline' || s.type === 'hray') {
-      if (Math.abs(cy - y1) < 20) return s;
+      if (Math.abs(cy - y1) < 25) return s;
     } else if (s.type === 'trendline' || s.type === 'eray' || s.type === 'fibo') {
       if (x2 != null && y2 != null) {
         const ex2 = s.type === 'eray' ? canvasW : x2;
         const ey2 = s.type === 'eray' ? (y1 + (y2-y1)/(x2-x1)*(canvasW-x1)) : y2;
         const l2 = (x1 - ex2)**2 + (y1 - ey2)**2;
-        if (l2 === 0) { if(Math.hypot(cx - x1, cy - y1) < 20) return s; continue; }
+        if (l2 === 0) { if(Math.hypot(cx - x1, cy - y1) < 25) return s; continue; }
         let t = ((cx - x1)*(ex2 - x1) + (cy - y1)*(ey2 - y1)) / l2;
         t = Math.max(0, Math.min(1, t));
-        if (Math.hypot(cx - (x1 + t*(ex2 - x1)), cy - (y1 + t*(ey2 - y1))) < 20) return s;
+        if (Math.hypot(cx - (x1 + t*(ex2 - x1)), cy - (y1 + t*(ey2 - y1))) < 25) return s;
       }
     } else if (s.type === 'zone') {
       if (x2 != null && y2 != null) {
@@ -808,7 +918,7 @@ function hitTest(cx, cy) {
       for(let p of s.points) {
          const px = chart.timeScale().logicalToCoordinate(logicalFromTime(p.time));
          const py = candleSeries.priceToCoordinate(p.price);
-         if(px!=null && py!=null && Math.hypot(cx-px, cy-py) < 20) return s;
+         if(px!=null && py!=null && Math.hypot(cx-px, cy-py) < 25) return s;
       }
     }
   }
@@ -819,23 +929,24 @@ function hitTestHandle(cx, cy, s) {
   const log1 = logicalFromTime(s.p1.time);
   const x1 = chart.timeScale().logicalToCoordinate(log1);
   const y1 = candleSeries.priceToCoordinate(s.p1.price);
-  if (Math.hypot(cx - x1, cy - y1) < 25) return 'p1';
+  if (Math.hypot(cx - x1, cy - y1) < 30) return 'p1';
   
   if (s.p2) {
     const log2 = logicalFromTime(s.p2.time);
     const x2 = chart.timeScale().logicalToCoordinate(log2);
     const y2 = candleSeries.priceToCoordinate(s.p2.price);
-    if (Math.hypot(cx - x2, cy - y2) < 25) return 'p2';
+    if (Math.hypot(cx - x2, cy - y2) < 30) return 'p2';
   }
   return 'body';
 }
 
-let lastTapTime = 0; 
 let isDraggingShape = false;
 let dragHandle = null;
 let dragStartLogical = 0, dragStartPrice = 0;
 let originalShape = null;
-let longPressTimer = null;
+
+let scTouchStartX = 0, scTouchStartY = 0;
+let isScClickCanceled = false;
 
 function setupPointerEvents() {
   const handleDown = (e) => {
@@ -843,22 +954,19 @@ function setupPointerEvents() {
 
     const coord = getChartCoordinates(e.clientX, e.clientY);
 
-    // 【選択・長押し移動モード】
+    // 【選択・移動モード】
     if (currentTool === 'cursor' && !scBuilder.active) {
       const hit = hitTest(coord.x, coord.y);
       if (hit) {
         selectedShape = hit;
+        isDraggingShape = true;
+        dragHandle = hitTestHandle(coord.x, coord.y, hit);
+        dragStartLogical = coord.logical;
+        dragStartPrice = coord.price;
+        originalShape = JSON.parse(JSON.stringify(hit));
+        // ドラッグ中はチャートを固定
+        chart.applyOptions({ handleScroll: false, handleScale: false });
         syncCanvas();
-        longPressTimer = setTimeout(() => {
-          isDraggingShape = true;
-          dragHandle = hitTestHandle(coord.x, coord.y, hit);
-          dragStartLogical = coord.logical;
-          dragStartPrice = coord.price;
-          originalShape = JSON.parse(JSON.stringify(hit));
-          chart.applyOptions({ handleScroll: false, handleScale: false });
-          showGuide("✨ 移動モード：スライドして配置");
-          if(navigator.vibrate) navigator.vibrate(50);
-        }, 400);
       } else {
         selectedShape = null;
         syncCanvas();
@@ -866,19 +974,21 @@ function setupPointerEvents() {
       return;
     }
     
-    if (scBuilder.active) { 
-      if (Date.now() - lastTapTime < 300) return;
-      lastTapTime = Date.now();
-      handleScenarioClick(coord); 
-      return; 
+    // 【シナリオ作成用ダウン】
+    if (scBuilder.active) {
+      scTouchStartX = e.clientX; scTouchStartY = e.clientY;
+      isScClickCanceled = false;
+      return;
     }
     
+    // 【描画モード】
     e.preventDefault(); 
     isDrawing = true; selectedShape = null;
     currentShape = { type: currentTool, color: drawSettings.color, width: drawSettings.width, p1: { time: coord.time, price: coord.price }, p2: { time: coord.time, price: coord.price }, points: [{time: coord.time, price: coord.price}] };
   };
 
   const handleMove = (e) => {
+    if (isSimulating) return;
     const coord = getChartCoordinates(e.clientX, e.clientY);
     
     if (currentTool === 'cursor' && !scBuilder.active) {
@@ -908,15 +1018,18 @@ function setupPointerEvents() {
             }
         }
         syncCanvas();
-      } else if (longPressTimer) {
-        clearTimeout(longPressTimer); longPressTimer = null;
       }
       return;
     }
 
     if (scBuilder.active) { 
+      // 指が大きく動いたらタップキャンセル
+      if (Math.hypot(e.clientX - scTouchStartX, e.clientY - scTouchStartY) > 15) {
+        isScClickCanceled = true;
+      }
       scBuilder.mouseX = coord.x; scBuilder.mouseY = coord.y; 
       scBuilder.priceHover = coord.price; scBuilder.timeHover = coord.time; 
+      syncCanvas(); // Hoverプレビューを更新
       return; 
     }
     
@@ -928,11 +1041,18 @@ function setupPointerEvents() {
   };
 
   const handleUp = (e) => {
-    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
     if (isDraggingShape) {
       isDraggingShape = false; dragHandle = null; originalShape = null;
       chart.applyOptions({ handleScroll: true, handleScale: true });
-      hideGuide();
+      return;
+    }
+
+    if (scBuilder.active) {
+      // 指が離れたタイミングで、大きく動いていなければクリックとして判定
+      if (!isScClickCanceled) {
+        const coord = getChartCoordinates(e.clientX, e.clientY);
+        handleScenarioClick(coord);
+      }
       return;
     }
     
@@ -1152,7 +1272,7 @@ function resetFabControls() {
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
-  canvas.style.pointerEvents = 'none';
+  canvas.style.pointerEvents = 'none'; // 再生中は描画防止
 
   resetFabControls();
   document.getElementById('fab-controls').style.display = 'flex';
@@ -1338,6 +1458,8 @@ function endSim(title, pips) {
   m.style.display = 'flex';
   
   if(pips!=null) recordResult(true, pips>0, pips); else if(scenarios.some(s=>s.type==='skip')) recordResult(false, false, 0);
+  
+  if(appMode !== 'free' && appMode !== 'live') { playsDone++; saveProgress(); }
   updateTopStatsUI();
 }
 
@@ -1346,6 +1468,7 @@ function reviewChart() {
   const fab = document.getElementById('fab-controls');
   fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
   fab.style.display = 'flex';
+  canvas.style.pointerEvents = 'auto'; // 振り返り用にタッチ復活
 }
 
 // ====== 成績・統計・期間フィルタ ======
@@ -1408,7 +1531,14 @@ async function executeSubmitDiscord(btn) {
   } catch(e) { alert('送信エラー'); btn.innerText="送信する"; btn.disabled=false; }
 }
 
-function nextProblem() { document.getElementById('modal-result').style.display='none'; loadNewProblem(); }
+function nextProblem() { 
+  if(appMode !== 'free' && appMode !== 'live' && playsDone >= maxPlays && appMode !== 'fintokei') {
+    alert("チャレンジ完了です！お疲れ様でした。");
+    clearSavedGame(); goToTop(); return;
+  }
+  document.getElementById('modal-result').style.display='none'; 
+  loadNewProblem(); 
+}
 </script>
 </body>
 </html>
