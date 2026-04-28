@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<!-- スマホ用ビューポート設定（ズーム禁止） -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TRADE SIMULATOR PRO - Mobile</title>
 
@@ -32,7 +33,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
   input, textarea, select { user-select: auto; font-family: inherit; }
 
-  /* 汎用UI（全体的にコンパクト化） */
+  /* 汎用UI */
   .btn { width:100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); background: var(--bg-hover); color: var(--text); text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #000; border: none; }
@@ -75,7 +76,9 @@ document.addEventListener('lwc-ready', _onLwcReady);
   #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 11px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
   #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 16px; display: none; flex-direction: column; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 320px; }
-  #fab-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 6px 14px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; }
+  #fab-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; display: none; flex-direction: column; align-items: center; gap: 8px; }
+  #fab-speed-ctrl { background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  #fab-controls { background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: nowrap; }
   .fab-btn { background: transparent; border: none; color: var(--text); font-size: 18px; padding: 4px; cursor: pointer; }
   .fab-btn-small { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); font-size: 10px; padding: 4px 10px; border-radius: 12px; cursor: pointer; display: none; }
   
@@ -92,7 +95,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px auto; flex-shrink: 0; }
   .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0; }
   .sheet-title { font-size: 14px; font-weight: 700; margin: 0; color:var(--text); }
-  .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .sheet-close-btn { background: rgba(255,255,255,0.1); border: none; color: var(--text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
   
   .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .tool-btn { aspect-ratio: 1; border-radius: 10px; background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: var(--text); }
@@ -113,13 +116,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
   .modal-content { background: var(--bg-sheet); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 360px; padding: 16px; text-align: center; max-height: 90dvh; overflow-y: auto; }
   .res-title { font-size: 20px; font-family: 'DM Mono', monospace; font-weight: 900; margin-bottom: 8px; }
 
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-box { background: var(--bg-panel); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid var(--border); }
-  .stat-val { font-size: 16px; font-weight: 700; font-family: 'DM Mono'; }
+  /* グリッドを3列に変更して実行率・正答率を表示 */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-box { background: var(--bg-panel); padding: 10px 4px; border-radius: 6px; text-align: center; border: 1px solid var(--border); }
+  .stat-val { font-size: 15px; font-weight: 700; font-family: 'DM Mono'; }
   .stat-lbl { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
   .indi-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
 
-  /* チェックボックス */
   .reason-label { display: block; margin-bottom: 6px; font-size: 12px; text-align: left; }
 
   @media (orientation: landscape) {
@@ -133,7 +136,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
     .palette { padding: 4px; }
     .bottom-sheet { padding: 10px; max-height: 100dvh; border-radius: 0; gap: 8px; }
     .sheet-header { margin-bottom: 2px; }
-    #fab-controls { bottom: 5px; padding: 4px 16px; gap: 12px; }
+    #fab-wrapper { bottom: 5px; flex-direction: row; gap: 12px; }
+    #fab-controls { padding: 4px 16px; gap: 12px; }
     .fab-btn { font-size: 16px; }
     .info-bar { flex-direction: row; gap: 12px; }
   }
@@ -141,6 +145,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
 </head>
 <body>
 
+<!-- 1. ログイン画面 -->
 <div id="login-overlay" class="full-overlay">
   <div class="login-box">
     <h2 style="color:#fff; margin-bottom:8px;">SIMULATOR <span style="color:var(--accent);">PRO</span></h2>
@@ -151,6 +156,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
+<!-- 2. TOP画面 -->
 <div id="top-screen" class="full-overlay">
   <div class="top-header">
     <div>
@@ -174,7 +180,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <div style="margin-bottom:12px;">
         <label style="font-size:11px; color:var(--text-muted);">通貨ペア選択</label>
         <select id="top-symbol-sel" class="input-field" style="margin-top:4px; font-family:'DM Mono';">
-          <option value="XAUUSDT">XAU/USD (Gold)</option>
+          <option value="PAXGUSDT">XAU/USD (Gold)</option>
           <option value="BTCUSDT" selected>BTC/USD (Bitcoin)</option>
         </select>
       </div>
@@ -204,6 +210,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
+<!-- 3. メインアプリ画面（チャート＆操作） -->
 <div id="app-screen">
   <header>
     <div class="header-left">
@@ -212,7 +219,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
       <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:14px;" onclick="requestFullScreen()">🔲</button>
-      <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:16px;" onclick="goToTop()">🏠</button>
+      <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
         <option value="15m">15m</option>
         <option value="1h">1H</option>
@@ -241,8 +248,15 @@ document.addEventListener('lwc-ready', _onLwcReady);
       </div>
     </div>
 
-    <div id="fab-controls">
-      <!-- Injected by JS -->
+    <!-- 再生コントローラー＆スピード調整 -->
+    <div id="fab-wrapper">
+      <div id="fab-speed-ctrl">
+        <span style="font-size:9px; font-weight:bold; color:var(--text-muted);">SPEED</span>
+        <input type="range" id="fab-speed" min="1" max="10" value="5" style="width:100px; margin:0;" oninput="syncSpeed(this.value)">
+      </div>
+      <div id="fab-controls">
+        <!-- Injected by JS -->
+      </div>
     </div>
   </main>
 
@@ -310,18 +324,21 @@ document.addEventListener('lwc-ready', _onLwcReady);
     <hr style="border:none; border-top:1px solid var(--border); margin:8px 0 16px;">
     
     <div style="font-weight:bold; margin-bottom:12px;">移動平均線 (MA)</div>
+    <!-- MA 1 -->
     <div class="indi-row">
-      <button class="btn" id="ma-vis-0" style="width:40px; padding:6px; border-color:#60a5fa; color:#60a5fa;" onclick="toggleMALine(0)">●</button>
+      <button class="btn" id="ma-vis-0" style="width:40px; padding:6px; border:1px solid #60a5fa; color:#60a5fa; background:transparent;" onclick="toggleMALine(0)">OFF</button>
       <button class="btn" id="ma-type-0" style="width:60px; padding:6px;" onclick="toggleMAType(0)">SMA</button>
       <input type="number" id="ma-len-0" class="input-field" value="20" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
+    <!-- MA 2 -->
     <div class="indi-row">
-      <button class="btn" id="ma-vis-1" style="width:40px; padding:6px; border-color:#fbbf24; color:#fbbf24;" onclick="toggleMALine(1)">●</button>
+      <button class="btn" id="ma-vis-1" style="width:40px; padding:6px; border:1px solid #fbbf24; color:#fbbf24; background:transparent;" onclick="toggleMALine(1)">OFF</button>
       <button class="btn" id="ma-type-1" style="width:60px; padding:6px;" onclick="toggleMAType(1)">SMA</button>
       <input type="number" id="ma-len-1" class="input-field" value="50" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
+    <!-- MA 3 -->
     <div class="indi-row">
-      <button class="btn" id="ma-vis-2" style="width:40px; padding:6px; border-color:#f87171; color:#f87171;" onclick="toggleMALine(2)">●</button>
+      <button class="btn" id="ma-vis-2" style="width:40px; padding:6px; border:1px solid #f87171; color:#f87171; background:transparent;" onclick="toggleMALine(2)">OFF</button>
       <button class="btn" id="ma-type-2" style="width:60px; padding:6px;" onclick="toggleMAType(2)">SMA</button>
       <input type="number" id="ma-len-2" class="input-field" value="200" style="margin:0; width:80px; text-align:center;" oninput="updateMA()">
     </div>
@@ -335,23 +352,23 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="sheet-close-btn" onclick="closeAllSheets()">✕</button>
     </div>
     <label style="font-size:11px; color:var(--text-muted);">デフォルトエントリー方式</label>
-    <select id="cfg-default-mode" class="input-field" style="margin-bottom:10px;">
+    <select id="cfg-default-mode" class="input-field" style="margin-bottom:12px;">
       <option value="pa">👀 PA確認 (到達時に手動判断)</option>
       <option value="limit">⚡ 指値 (到達で即エントリー)</option>
     </select>
     <label style="font-size:11px; color:var(--text-muted);">シナリオの有効期限</label>
-    <select id="cfg-expire-mode" class="input-field" style="margin-bottom:10px;">
+    <select id="cfg-expire-mode" class="input-field" style="margin-bottom:12px;">
       <option value="box">描画した枠内でのみ</option>
       <option value="infinite">枠外(未来)でも到達で</option>
     </select>
     <label style="font-size:11px; color:var(--text-muted);">PA確認モードの挙動</label>
-    <select id="cfg-pa-behavior" class="input-field" style="margin-bottom:10px;">
+    <select id="cfg-pa-behavior" class="input-field" style="margin-bottom:12px;">
       <option value="touch_once">到達時に1回だけ確認する</option>
       <option value="touch_every">タッチする度毎回確認</option>
       <option value="in_zone">期限内に入ったら常にコマ送り</option>
     </select>
     <label style="font-size:11px; color:var(--text-muted);">自動再生スピード</label>
-    <input type="range" id="cfg-speed" min="1" max="10" value="5" style="width:100%; margin-bottom:16px;">
+    <input type="range" id="cfg-speed" min="1" max="10" value="5" style="width:100%; margin-bottom:20px;" oninput="syncSpeed(this.value)">
   </div>
 
   <nav class="bottom-nav">
@@ -363,6 +380,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </nav>
 </div>
 
+<!-- モーダル: TOP画面の詳細成績＆期間ソート -->
 <div class="center-modal" id="modal-top-stats">
   <div class="modal-content">
     <h3 style="font-size:15px; margin-bottom:12px;">📈 成績詳細フィルター</h3>
@@ -371,13 +389,22 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <option value="7d">直近 7日間</option>
       <option value="30d">直近 30日間</option>
     </select>
+    
     <div class="stat-grid" id="modal-stat-grid" style="margin: 12px 0;">
+      <div class="stat-box"><div class="stat-val" id="mod-st-entry">0%</div><div class="stat-lbl">実行率</div></div>
+      <div class="stat-box"><div class="stat-val" id="mod-st-acc">0%</div><div class="stat-lbl">正答率</div></div>
       <div class="stat-box"><div class="stat-val" id="mod-st-win">0%</div><div class="stat-lbl">勝率</div></div>
       <div class="stat-box"><div class="stat-val" id="mod-st-rr">0.0</div><div class="stat-lbl">平均RR</div></div>
       <div class="stat-box"><div class="stat-val" style="color:var(--green);" id="mod-st-gain">0.0</div><div class="stat-lbl">獲得 pips</div></div>
       <div class="stat-box"><div class="stat-val" style="color:var(--red);" id="mod-st-loss">0.0</div><div class="stat-lbl">損失 pips</div></div>
-      <div class="stat-box" style="grid-column:span 2;"><div class="stat-val" id="mod-st-ev">0.0</div><div class="stat-lbl">期待値 (pips/回)</div></div>
+      <div class="stat-box" style="grid-column:span 3;"><div class="stat-val" id="mod-st-ev">0.0</div><div class="stat-lbl">期待値 (pips/回)</div></div>
     </div>
+    
+    <div style="font-size:9px; color:var(--text-muted); text-align:left; margin-bottom:12px; line-height:1.4;">
+      ※ 実行率 = エントリー回数 ÷ 総検証回数<br>
+      ※ 正答率 = 勝ち回数 ÷ 総検証回数
+    </div>
+
     <div style="display:flex; gap:8px;">
       <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="resetStats()">🗑 データ削除</button>
       <button class="btn btn-primary" onclick="document.getElementById('modal-top-stats').style.display='none';">閉じる</button>
@@ -385,9 +412,12 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
+<!-- モーダル: 根拠入力 -->
 <div class="center-modal" id="modal-reason">
   <div class="modal-content">
     <h3 id="rm-title" style="font-size:15px; margin-bottom:12px;">シナリオの根拠</h3>
+    
+    <!-- Trade用 -->
     <div id="rm-reasons-trade" style="display:flex; flex-direction:column; gap:6px; text-align:left; margin-bottom:12px;">
       <label class="reason-label"><input type="checkbox" value="ダウ理論/トレンドフォロー"> ダウ理論 / トレンド</label>
       <label class="reason-label"><input type="checkbox" value="水平線/サポレジ反発"> 水平線 / サポレジ</label>
@@ -396,6 +426,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <label class="reason-label"><input type="checkbox" value="チャートパターン"> チャートパターン</label>
       <label class="reason-label"><input type="checkbox" value="プライスアクション"> プライスアクション</label>
     </div>
+
+    <!-- Skip用 -->
     <div id="rm-reasons-skip" style="display:none; flex-direction:column; gap:6px; text-align:left; margin-bottom:12px;">
       <label class="reason-label"><input type="checkbox" value="方向感が不明確 (レンジ)"> 方向感が不明確</label>
       <label class="reason-label"><input type="checkbox" value="優位性のある形ではない"> 優位性のある形ではない</label>
@@ -403,6 +435,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <label class="reason-label"><input type="checkbox" value="上位足と逆行している"> 上位足と逆行</label>
       <label class="reason-label"><input type="checkbox" value="重要指標・ニュース警戒"> 重要指標警戒</label>
     </div>
+
     <input type="text" id="rm-memo" class="input-field" placeholder="フリーメモ (任意)">
     <div style="display:flex; gap:8px; margin-top:8px;">
       <button class="btn" onclick="document.getElementById('modal-reason').style.display='none'; cancelScenarioBuilder();">ｷｬﾝｾﾙ</button>
@@ -411,6 +444,28 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
+<!-- モーダル: 最終レポート (ドリル・アイアンマン完走時) -->
+<div class="center-modal" id="modal-final-report">
+  <div class="modal-content">
+    <h3 style="font-size:20px; font-family:'DM Mono', monospace; font-weight:900; margin-bottom:8px; color:var(--accent);">MISSION COMPLETE</h3>
+    <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">チャレンジが終了しました！お疲れ様でした。</div>
+    
+    <div class="stat-grid" id="final-stat-grid" style="margin-bottom: 20px;">
+      <!-- Injected by JS -->
+    </div>
+    
+    <div style="background:rgba(96,165,250,0.1); border:1px solid var(--blue); padding:12px; border-radius:10px; margin-bottom:16px;">
+      <div style="font-size:11px; color:var(--blue); font-weight:bold; margin-bottom:6px;">📝 完走レポートをDiscordへ送信</div>
+      <input type="text" id="final-submit-username" class="input-field" placeholder="名前" readonly style="color:var(--accent); margin-bottom:6px;">
+      <textarea id="final-submit-memo" class="input-field" rows="3" placeholder="今回のチャレンジの総括や反省点を書いてください" style="margin-bottom:6px;"></textarea>
+      <button class="btn" style="background:var(--blue); color:#fff; border:none; padding:10px;" onclick="executeSubmitDiscordFinal(this)">📤 レポートを送信</button>
+    </div>
+    
+    <button class="btn btn-primary" onclick="closeFinalReportAndGoTop()">🏠 TOP画面へ戻る</button>
+  </div>
+</div>
+
+<!-- モーダル: 結果表示 -->
 <div class="center-modal" id="modal-result">
   <div class="modal-content">
     <div class="res-title" id="res-title"></div>
@@ -466,7 +521,7 @@ let maSeriesList = [];
 let isMaVisible = false;
 let maColors = ['#60a5fa', '#fbbf24', '#f87171'];
 let maTypes = ['SMA', 'SMA', 'SMA'];
-let maVisible = [true, true, true];
+let maVisible = [false, false, false]; // 初期は全てOFF
 let volumeSeries = null;
 let isVolumeVisible = false;
 
@@ -481,12 +536,17 @@ function requestFullScreen() {
   }
 }
 
+// 速度コントローラーの同期
+function syncSpeed(val) {
+  const el1 = document.getElementById('cfg-speed');
+  const el2 = document.getElementById('fab-speed');
+  if(el1 && el1.value !== val) el1.value = val;
+  if(el2 && el2.value !== val) el2.value = val;
+}
+
 if (window._lwcReady) _startInit(); else window._lwcCallback = _startInit;
 function _startInit() {
   checkSavedProgress();
-  // document.getElementById('login-overlay').style.display = 'none';
-  // document.getElementById('top-screen').style.display = 'flex';
-  // updateTopStatsUI();
 }
 
 async function attemptLogin(tryFullscreen = false) {
@@ -506,7 +566,7 @@ async function attemptLogin(tryFullscreen = false) {
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('top-screen').style.display = 'flex';
       document.getElementById('submit-username').value = currentSalonUserName + " さん";
-      updateTopStatsUI();
+      updateTopStatsUI('all');
       checkSavedProgress();
     } else {
       errorDiv.innerText = "❌ 口座番号が無効です。"; errorDiv.style.display = 'block';
@@ -543,6 +603,7 @@ function initChartSystem() {
       if (range && range.to < visibleData.length - 2) btnLatest.style.display = 'inline-block';
       else btnLatest.style.display = 'none';
     }
+    syncCanvas(); 
   });
 
   new ResizeObserver(entries => {
@@ -650,7 +711,7 @@ function goToTop() {
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('top-screen').style.display = 'flex';
   clearTimeout(simTimeout); isSimulating = false;
-  updateTopStatsUI();
+  updateTopStatsUI('all');
   checkSavedProgress();
 }
 
@@ -730,8 +791,19 @@ function updateVolumeData() {
 function toggleMALine(idx) {
   maVisible[idx] = !maVisible[idx];
   const btn = document.getElementById('ma-vis-'+idx);
-  btn.innerText = maVisible[idx] ? '●' : '○';
-  btn.style.opacity = maVisible[idx] ? '1' : '0.4';
+  
+  if (maVisible[idx]) {
+    btn.innerText = 'ON';
+    btn.style.background = maColors[idx];
+    btn.style.color = '#000';
+    btn.style.opacity = '1';
+  } else {
+    btn.innerText = 'OFF';
+    btn.style.background = 'transparent';
+    btn.style.color = maColors[idx];
+    btn.style.opacity = '0.5';
+  }
+  
   isMaVisible = maVisible.some(v=>v);
   updateMA();
 }
@@ -741,8 +813,11 @@ function toggleMAType(idx) {
   updateMA();
 }
 function updateMA() {
-  maSeriesList.forEach(s => { if(s.series) chart.removeSeries(s.series); });
+  maSeriesList.forEach(s => { 
+    try { chart.removeSeries(s.series); } catch(e) {} 
+  });
   maSeriesList = [];
+  
   if (!isMaVisible || visibleData.length === 0) return;
   
   for(let idx=0; idx<3; idx++) {
@@ -794,7 +869,7 @@ function generateDummyData() {
 // 15,000本取得
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
-  document.getElementById('fab-controls').style.display = 'none';
+  document.getElementById('fab-wrapper').style.display = 'none';
   document.getElementById('action-panel').style.display = 'none';
   document.getElementById('modal-result').style.display = 'none';
   resetFabControls();
@@ -809,11 +884,15 @@ async function loadNewProblem() {
     const maxTime = Date.now() - (180 * 24 * 60 * 60 * 1000);
     let endTime = Math.floor(minTime + Math.random() * (maxTime - minTime));
     
+    let fetchSymbol = activeSymbol;
     let baseUrl = 'https://api.binance.com/api/v3/klines';
-    if (activeSymbol === 'XAUUSDT') baseUrl = 'https://fapi.binance.com/fapi/v1/klines'; 
+    if (activeSymbol === 'XAUUSDT' || activeSymbol === 'PAXGUSDT') {
+      baseUrl = 'https://api.binance.com/api/v3/klines';
+      fetchSymbol = 'PAXGUSDT'; 
+    }
 
     for(let i=0; i<15; i++) {
-      const res = await fetch(`${baseUrl}?symbol=${activeSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
+      const res = await fetch(`${baseUrl}?symbol=${fetchSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
       if(!res.ok) throw new Error("APIエラー");
       const data = await res.json();
       if(data.length===0) break;
@@ -833,7 +912,6 @@ async function loadNewProblem() {
   document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
 }
 
-// ★ 時間足変更時のアンカー機能（中心時間を記憶して復元）
 function changeTimeframe() { 
   const range = chart.timeScale().getVisibleLogicalRange(); 
   let centerTime = null; let barCount = 100;
@@ -851,13 +929,11 @@ function applyTimeframe(centerTime = null, barCount = 100) {
   visibleData = aggregateData(fullBaseData, currentTF, currentIndex);
   candleSeries.setData(visibleData);
   
-  // スケールのリセット
   chart.priceScale('right').applyOptions({ autoScale: true });
   
   if(isMaVisible) updateMA();
   if(isVolumeVisible) updateVolumeData();
   
-  // 中心時間を指定して元の表示位置にスナップさせる
   if (centerTime !== null) {
     const newCenterLog = logicalFromTime(centerTime);
     if (newCenterLog !== null) { 
@@ -867,6 +943,7 @@ function applyTimeframe(centerTime = null, barCount = 100) {
     const dataLen = visibleData.length;
     chart.timeScale().setVisibleLogicalRange({ from: dataLen - 80, to: dataLen + 20 });
   }
+  syncCanvas();
 }
 
 function aggregateData(baseArr, tfStr, maxIndex) {
@@ -914,6 +991,22 @@ function logicalFromTime(t) {
   return r + (t - t1) / (t2 - t1);
 }
 
+// 堅牢な座標変換（時間足を変えてもズレない）
+function safeLogicalToCoordinate(logical) {
+  if (logical === null || isNaN(logical)) return null; 
+  const ts = chart.timeScale(); 
+  const idx1 = Math.floor(logical); 
+  const idx2 = Math.ceil(logical);
+  if (idx1 === idx2) { 
+    const x = ts.logicalToCoordinate(idx1); 
+    return (x !== null && !isNaN(x)) ? x : null; 
+  }
+  const x1 = ts.logicalToCoordinate(idx1); 
+  const x2 = ts.logicalToCoordinate(idx2);
+  if (x1 === null || x2 === null || isNaN(x1) || isNaN(x2)) return null; 
+  return x1 + (logical - idx1) * (x2 - x1);
+}
+
 // ====== Canvas & ドラッグ ======
 function resizeCanvas(w, h) {
   const ratio = window.devicePixelRatio || 1; 
@@ -941,8 +1034,8 @@ function hitTest(cx, cy) {
   for (let i = shapes.length - 1; i >= 0; i--) {
     const s = shapes[i];
     const log1 = logicalFromTime(s.p1.time); const log2 = s.p2 ? logicalFromTime(s.p2.time) : null;
-    const x1 = chart.timeScale().logicalToCoordinate(log1); const y1 = candleSeries.priceToCoordinate(s.p1.price);
-    const x2 = log2 ? chart.timeScale().logicalToCoordinate(log2) : null; const y2 = s.p2 ? candleSeries.priceToCoordinate(s.p2.price) : null;
+    const x1 = safeLogicalToCoordinate(log1); const y1 = candleSeries.priceToCoordinate(s.p1.price);
+    const x2 = log2 ? safeLogicalToCoordinate(log2) : null; const y2 = s.p2 ? candleSeries.priceToCoordinate(s.p2.price) : null;
     
     if (x1 == null || y1 == null) continue;
 
@@ -966,7 +1059,7 @@ function hitTest(cx, cy) {
       }
     } else if (s.type === 'pen') {
       for(let p of s.points) {
-         const px = chart.timeScale().logicalToCoordinate(logicalFromTime(p.time));
+         const px = safeLogicalToCoordinate(logicalFromTime(p.time));
          const py = candleSeries.priceToCoordinate(p.price);
          if(px!=null && py!=null && Math.hypot(cx-px, cy-py) < 25) return s;
       }
@@ -977,13 +1070,13 @@ function hitTest(cx, cy) {
 
 function hitTestHandle(cx, cy, s) {
   const log1 = logicalFromTime(s.p1.time);
-  const x1 = chart.timeScale().logicalToCoordinate(log1);
+  const x1 = safeLogicalToCoordinate(log1);
   const y1 = candleSeries.priceToCoordinate(s.p1.price);
   if (Math.hypot(cx - x1, cy - y1) < 30) return 'p1';
   
   if (s.p2) {
     const log2 = logicalFromTime(s.p2.time);
-    const x2 = chart.timeScale().logicalToCoordinate(log2);
+    const x2 = safeLogicalToCoordinate(log2);
     const y2 = candleSeries.priceToCoordinate(s.p2.price);
     if (Math.hypot(cx - x2, cy - y2) < 30) return 'p2';
   }
@@ -999,7 +1092,6 @@ let scTouchStartX = 0, scTouchStartY = 0;
 let isScClickCanceled = false;
 let lastTapTime = 0;
 
-// ★ LWCのコンテナレベルでイベントをインターセプト（Capture Phase）
 function setupPointerEvents() {
   const container = document.getElementById('chart-container');
 
@@ -1013,7 +1105,7 @@ function setupPointerEvents() {
     if (currentTool === 'cursor' && !scBuilder.active) {
       const hit = hitTest(coord.x, coord.y);
       if (hit) {
-        e.stopPropagation(); // LWCにイベントを渡さない（スクロール停止）
+        e.stopPropagation(); 
         if(e.cancelable) e.preventDefault();
         
         selectedShape = hit;
@@ -1026,7 +1118,6 @@ function setupPointerEvents() {
       } else {
         selectedShape = null;
         syncCanvas();
-        // hitしなければ何もしない＝LWCがスクロールを受け取る
       }
       return;
     }
@@ -1121,8 +1212,8 @@ function setupPointerEvents() {
       e.stopPropagation();
       if(e.cancelable) e.preventDefault();
       
-      // チャタリング防止＆大きなズレ防止
-      if (Date.now() - lastTapTime < 300) return;
+      // チャタリング防止
+      if (Date.now() - lastTapTime < 400) return; 
       
       if (!isScClickCanceled && coords.clientX != null) {
         lastTapTime = Date.now();
@@ -1180,15 +1271,23 @@ function syncCanvas() {
   all.forEach(s => {
     ctx.strokeStyle = s.color; ctx.lineWidth = s.width; ctx.beginPath();
     const log1 = logicalFromTime(s.p1.time); const log2 = s.p2 ? logicalFromTime(s.p2.time) : null;
-    const x1 = chart.timeScale().logicalToCoordinate(log1); const y1 = candleSeries.priceToCoordinate(s.p1.price);
-    const x2 = log2 ? chart.timeScale().logicalToCoordinate(log2) : null; const y2 = s.p2 ? candleSeries.priceToCoordinate(s.p2.price) : null;
+    const x1 = safeLogicalToCoordinate(log1); const y1 = candleSeries.priceToCoordinate(s.p1.price);
+    const x2 = log2 ? safeLogicalToCoordinate(log2) : null; const y2 = s.p2 ? candleSeries.priceToCoordinate(s.p2.price) : null;
     
     if(x1==null || y1==null) return;
     
     if(s.type === 'trendline' && x2!=null) { ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
     else if(s.type === 'eray' && x2!=null) { 
-      const slope = x1===x2 ? 0 : (y2-y1)/(x2-x1);
-      ctx.moveTo(x1,y1); ctx.lineTo(canvasW, y1 + slope*(canvasW-x1)); ctx.stroke(); 
+      const log_edge = chart.timeScale().coordinateToLogical(canvasW);
+      if(log_edge != null && log2 !== log1) {
+        const price_edge = s.p1.price + ((s.p2.price - s.p1.price) / (log2 - log1)) * (log_edge - log1);
+        const y_edge = candleSeries.priceToCoordinate(price_edge);
+        if(y_edge != null) {
+          ctx.moveTo(x1, y1); ctx.lineTo(canvasW, y_edge); ctx.stroke();
+        }
+      } else {
+        ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); 
+      }
     }
     else if(s.type === 'hline') { ctx.moveTo(0,y1); ctx.lineTo(canvasW,y1); ctx.stroke(); }
     else if(s.type === 'hray') { ctx.moveTo(x1,y1); ctx.lineTo(canvasW,y1); ctx.stroke(); }
@@ -1215,7 +1314,7 @@ function syncCanvas() {
     }
     else if(s.type === 'pen') { 
       s.points.forEach((p,i)=>{ 
-        const px=chart.timeScale().logicalToCoordinate(logicalFromTime(p.time)); 
+        const px=safeLogicalToCoordinate(logicalFromTime(p.time)); 
         const py=candleSeries.priceToCoordinate(p.price); 
         if(px!=null && py!=null) { if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); } 
       }); 
@@ -1235,17 +1334,31 @@ function syncCanvas() {
 
 function drawPositionTool(type, entry, tp, sl, isPreview, expireTime) {
   if(!entry) return;
-  const log = logicalFromTime(entry.time); const ex = chart.timeScale().logicalToCoordinate(log); const ey = candleSeries.priceToCoordinate(entry.price);
+  const log = logicalFromTime(entry.time); const ex = safeLogicalToCoordinate(log); const ey = candleSeries.priceToCoordinate(entry.price);
   if(ex==null || ey==null) return;
   
   let width = 100;
   if(isPreview) { width = Math.max(40, scBuilder.mouseX - ex); } 
-  else if (expireTime) { const logExp = logicalFromTime(expireTime); const exExp = chart.timeScale().logicalToCoordinate(logExp); if(exExp!=null) width = Math.max(20, exExp - ex); }
+  else if (expireTime) { const logExp = logicalFromTime(expireTime); const exExp = safeLogicalToCoordinate(logExp); if(exExp!=null) width = Math.max(20, exExp - ex); }
   
   if(tp && tp.price!=null) { const tpy = candleSeries.priceToCoordinate(tp.price); if(tpy!=null) { ctx.fillStyle='rgba(8,153,129,0.3)'; ctx.fillRect(ex, Math.min(ey,tpy), width, Math.abs(ey-tpy)); } }
   if(sl && sl.price!=null) { const sly = candleSeries.priceToCoordinate(sl.price); if(sly!=null) { ctx.fillStyle='rgba(242,54,69,0.3)'; ctx.fillRect(ex, Math.min(ey,sly), width, Math.abs(ey-sly)); } }
   ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex+width,ey); ctx.stroke();
+
+  // ★ RR比の描画
+  if(tp && tp.price!=null && sl && sl.price!=null && !isPreview) {
+    const reward = Math.abs(entry.price - tp.price);
+    const risk = Math.abs(entry.price - sl.price);
+    if(risk > 0) {
+      const rr = reward / risk;
+      ctx.fillStyle = '#fff';
+      ctx.font = "bold 11px 'DM Mono', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(`RR: ${rr.toFixed(2)}`, ex + width + 8, ey + 4);
+    }
+  }
 }
+
 function drawBuilderPreview() {
   if(scBuilder.priceHover==null) return;
   ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
@@ -1345,11 +1458,12 @@ function renderScenarios() {
 // ====== シミュレーション ======
 function manualStep() {
   if (!stepCandleEngine()) {
-    endSim("データ終了", null);
+    finalizeSimulation();
   }
 }
 
 function resetFabControls() {
+  document.getElementById('fab-wrapper').style.display = 'none';
   document.getElementById('fab-controls').innerHTML = `
     <button class="fab-btn-small" id="btn-scroll-latest" onclick="scrollToLatest()">⏩ 最新へ</button>
     <button class="fab-btn" onclick="manualStep()" style="font-size:16px;">⏭ 1本</button>
@@ -1363,11 +1477,10 @@ function resetFabControls() {
 function startSimulation() {
   closeAllSheets(); isSimulating = true;
   
-  // シミュレーション中は描画や操作をさせないためカーソルモードへリセット
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
 
   resetFabControls();
-  document.getElementById('fab-controls').style.display = 'flex';
+  document.getElementById('fab-wrapper').style.display = 'flex';
   document.getElementById('btn-toggle-play').innerText = '⏸️';
   scenarios.forEach(sc => { sc.triggered = false; sc.lastSkipTime = null; });
   resumeSimulation();
@@ -1385,7 +1498,7 @@ function resumeSimulation() {
   
   function loop() {
     if(!isSimulating) return;
-    if(!stepCandleEngine()) { endSim("データ終了", null); return; }
+    if(!stepCandleEngine()) { finalizeSimulation(); return; }
     
     const candle = fullBaseData[currentIndex];
     
@@ -1451,14 +1564,14 @@ function stepCandleEngine() {
 
 function triggerPAMode(sc) {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = true; activePaSc = sc;
-  document.getElementById('fab-controls').style.display = 'none';
+  document.getElementById('fab-wrapper').style.display = 'none';
   const paBehavior = document.getElementById('cfg-pa-behavior').value;
   const msgEl = document.getElementById('pa-msg'); const skipBtn = document.getElementById('btn-pa-skip');
   if (paBehavior === 'in_zone') { msgEl.innerText = `期限内に入りました。コマ送りで判断してください。`; skipBtn.innerText = "監視終了 (自動再生へ)"; } 
   else { msgEl.innerText = `エントリー価格に到達しました。判断してください。`; skipBtn.innerText = "❌ 見送る"; }
   document.getElementById('action-panel').style.display = 'flex';
 }
-function stepCandleManual() { if(!stepCandleEngine()) endSim("データ終了", null); }
+function stepCandleManual() { if(!stepCandleEngine()) finalizeSimulation(); }
 function paExecuteEntry() {
   document.getElementById('action-panel').style.display = 'none';
   const price = fullBaseData[currentIndex].close;
@@ -1466,7 +1579,7 @@ function paExecuteEntry() {
   chartMarkers.push({ time: fullBaseData[currentIndex].time, position: 'belowBar', color: '#4ade80', shape: 'arrowUp', text: 'PA Entry' });
   candleSeries.setMarkers(chartMarkers);
   isPaMode = false; isSimulating = true;
-  document.getElementById('fab-controls').style.display = 'flex'; document.getElementById('btn-toggle-play').innerText = '⏸️';
+  document.getElementById('fab-wrapper').style.display = 'flex'; document.getElementById('btn-toggle-play').innerText = '⏸️';
   resumeSimulation();
 }
 function paSkipEntry() {
@@ -1478,7 +1591,7 @@ function paSkipEntry() {
     else activePaSc.lastSkipTime = fullBaseData[currentIndex].time;
   }
   activePaSc = null; isSimulating = true;
-  document.getElementById('fab-controls').style.display = 'flex'; document.getElementById('btn-toggle-play').innerText = '⏸️';
+  document.getElementById('fab-wrapper').style.display = 'flex'; document.getElementById('btn-toggle-play').innerText = '⏸️';
   resumeSimulation();
 }
 
@@ -1506,12 +1619,24 @@ function skipToFinalResult() {
       if(res) { const pips=Math.abs(activePos.actualEntryPrice-(res==='tp'?activePos.tp.price:activePos.sl.price)); endSim(res==='tp'?"🎯 勝利":"💥 敗北", res==='tp'?pips:-pips); return; }
     }
   }
-  endSim("⏳ 時間切れ", null);
+  finalizeSimulation();
+}
+
+function finalizeSimulation() {
+  if (activePos) {
+    const finalPrice = fullBaseData[currentIndex].close;
+    const pips = Math.abs(activePos.actualEntryPrice - finalPrice);
+    const isWin = (activePos.type === 'long' && finalPrice > activePos.actualEntryPrice) || (activePos.type === 'short' && finalPrice < activePos.actualEntryPrice);
+    const profit = isWin ? pips : -pips;
+    endSim(profit > 0 ? "⏳ 時間切れ・強制利確" : "⏳ 時間切れ・強制損切", profit);
+  } else {
+    endSim("⏳ 決着つかず (ノーエントリー)", null);
+  }
 }
 
 function endSim(title, pips) {
   isSimulating = false; clearTimeout(simTimeout); 
-  document.getElementById('fab-controls').style.display = 'none';
+  document.getElementById('fab-wrapper').style.display = 'none';
   document.getElementById('action-panel').style.display = 'none';
   const m = document.getElementById('modal-result');
   document.getElementById('res-title').innerText = title;
@@ -1551,16 +1676,93 @@ function endSim(title, pips) {
   
   if(pips!=null) recordResult(true, pips>0, pips); else if(scenarios.some(s=>s.type==='skip')) recordResult(false, false, 0);
   
-  if(appMode !== 'free' && appMode !== 'live') { playsDone++; saveProgress(); }
+  if(appMode !== 'free' && appMode !== 'live') { 
+    playsDone++; 
+    saveProgress(); 
+    const badge = document.getElementById('mode-badge');
+    if(appMode==='practice10') badge.innerText = `DRILL (${playsDone}/10)`; 
+    else if(appMode==='challenge100') badge.innerText = `IRONMAN (${playsDone}/100)`;
+  }
+  
   updateTopStatsUI();
+}
+
+// ★ 完走レポート用モーダル表示
+function showFinalReportModal() {
+  document.getElementById('modal-result').style.display = 'none';
+  const m = document.getElementById('modal-final-report');
+  
+  let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
+  const challengeRecords = records.slice(-playsDone); 
+  
+  const entries = challengeRecords.filter(r=>r.entry); const wins = entries.filter(r=>r.win);
+  const winRate = entries.length>0 ? (wins.length/entries.length)*100 : 0;
+  let grossWin=0, grossLoss=0; 
+  wins.forEach(r=>grossWin+=Math.abs(r.pips)); 
+  entries.filter(r=>!r.win).forEach(r=>grossLoss+=Math.abs(r.pips));
+  
+  const netPips = grossWin - grossLoss;
+  const netColor = netPips >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('final-stat-grid').innerHTML = `
+    <div class="stat-box"><div class="stat-val">${playsDone}</div><div class="stat-lbl">検証回数</div></div>
+    <div class="stat-box"><div class="stat-val">${winRate.toFixed(1)}%</div><div class="stat-lbl">勝率</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">+${grossWin.toFixed(1)}</div><div class="stat-lbl">獲得 pips</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--red);">-${grossLoss.toFixed(1)}</div><div class="stat-lbl">損失 pips</div></div>
+    <div class="stat-box" style="grid-column:span 2;"><div class="stat-val" style="color:${netColor};">${netPips>=0?'+':''}${netPips.toFixed(1)}</div><div class="stat-lbl">純損益 pips</div></div>
+  `;
+  
+  if (currentSalonUserName) {
+    document.getElementById('final-submit-username').value = currentSalonUserName + " さん";
+  }
+  
+  m.style.display = 'flex';
+}
+
+function closeFinalReportAndGoTop() {
+  document.getElementById('modal-final-report').style.display = 'none';
+  clearSavedGame(); 
+  goToTop();
+}
+
+async function executeSubmitDiscordFinal(btn) {
+  const name = document.getElementById('final-submit-username').value; 
+  const memo = document.getElementById('final-submit-memo').value;
+  btn.innerText="送信中..."; btn.disabled=true;
+  try {
+    let modeName = appMode === 'practice10' ? "タクティカル・ドリル (10回)" : "アイアンマン・チャレンジ (100回)";
+    
+    let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
+    const challengeRecords = records.slice(-playsDone); 
+    const entries = challengeRecords.filter(r=>r.entry); const wins = entries.filter(r=>r.win);
+    const winRate = entries.length>0 ? (wins.length/entries.length)*100 : 0;
+    let grossWin=0, grossLoss=0; 
+    wins.forEach(r=>grossWin+=Math.abs(r.pips)); 
+    entries.filter(r=>!r.win).forEach(r=>grossLoss+=Math.abs(r.pips));
+    const netPips = grossWin - grossLoss;
+
+    let content = `**【🏆 完走レポート提出】** ${name}\n`;
+    content += `**【モード】** ${modeName}\n`;
+    content += `**【成績】** 検証回数: ${playsDone}回 / 勝率: ${winRate.toFixed(1)}% / 純利益: ${netPips >= 0 ? '+' : ''}${netPips.toFixed(1)} pips\n`;
+    content += `**【所感・反省】**\n${memo || "（記入なし）"}`;
+
+    const fd = new FormData(); 
+    fd.append('content', content);
+    
+    await fetch(DISCORD_WEBHOOK_URL, {method:'POST', body:fd});
+    alert('送信完了'); btn.innerText="送信済";
+  } catch(e) { 
+    alert('送信エラー'); btn.innerText="📤 レポートを送信"; btn.disabled=false; 
+  }
 }
 
 function reviewChart() {
   document.getElementById('modal-result').style.display = 'none';
-  const fab = document.getElementById('fab-controls');
-  // 振り返り後の導線（「次のチャートへ」ボタン）を表示
-  fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
-  fab.style.display = 'flex';
+  const fabControls = document.getElementById('fab-controls');
+  fabControls.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
+  document.getElementById('fab-wrapper').style.display = 'flex';
+  document.getElementById('fab-speed-ctrl').style.display = 'none';
+  document.querySelector('.tool-btn[data-tool="cursor"]').click();
 }
 
 // ====== 成績・統計・期間フィルタ ======
@@ -1569,6 +1771,7 @@ function recordResult(isEntry, isWin, pips) {
   records.push({entry: isEntry, win: isWin, pips: pips, ts: Date.now()}); 
   localStorage.setItem('trade_stats_mobile_v1', JSON.stringify(records));
 }
+
 function getStatsData(period = 'all') {
   let records = JSON.parse(localStorage.getItem('trade_stats_mobile_v1') || '[]');
   if (period !== 'all') {
@@ -1576,7 +1779,8 @@ function getStatsData(period = 'all') {
     const limit = period === '7d' ? 7 * 86400000 : 30 * 86400000;
     records = records.filter(r => (now - r.ts) <= limit);
   }
-  if(records.length===0) return { winRate: 0, gain: 0, loss: 0, rr: 0, ev: 0 };
+  const totalPlays = records.length;
+  if(totalPlays === 0) return { winRate: 0, gain: 0, loss: 0, rr: 0, ev: 0, entryRate: 0, accuracy: 0, totalPlays: 0 };
   
   const entries = records.filter(r=>r.entry); const wins = entries.filter(r=>r.win);
   const winRate = entries.length>0 ? (wins.length/entries.length)*100 : 0;
@@ -1586,25 +1790,46 @@ function getStatsData(period = 'all') {
   
   const rr = grossLoss>0 ? (grossWin/wins.length / (grossLoss/(entries.length-wins.length))) : (wins.length>0 ? 99.9 : 0);
   const ev = entries.length>0 ? (grossWin - grossLoss) / entries.length : 0;
-  return { winRate, gain: grossWin, loss: grossLoss, rr, ev };
+  
+  const entryRate = (entries.length / totalPlays) * 100;
+  const accuracy = (wins.length / totalPlays) * 100;
+
+  return { winRate, gain: grossWin, loss: grossLoss, rr, ev, entryRate, accuracy, totalPlays };
 }
+
 function updateTopStatsUI(period = 'all') {
   const stats = getStatsData(period);
-  document.getElementById('top-st-win').innerText = stats.winRate.toFixed(1)+'%';
-  document.getElementById('top-st-gain').innerText = stats.gain.toFixed(1);
-  document.getElementById('top-st-loss').innerText = stats.loss.toFixed(1);
-  document.getElementById('top-st-rr').innerText = stats.rr.toFixed(2);
+  
+  const topWin = document.getElementById('top-st-win');
+  if (topWin) topWin.innerText = stats.winRate.toFixed(1)+'%';
+  const topGain = document.getElementById('top-st-gain');
+  if (topGain) topGain.innerText = stats.gain.toFixed(1);
+  const topLoss = document.getElementById('top-st-loss');
+  if (topLoss) topLoss.innerText = stats.loss.toFixed(1);
+  const topRr = document.getElementById('top-st-rr');
+  if (topRr) topRr.innerText = stats.rr.toFixed(2);
   
   const lbl = document.getElementById('top-stats-period-lbl');
   if(lbl) lbl.innerText = period === '7d' ? '直近 7日間' : period === '30d' ? '直近 30日間' : '全期間';
 
-  document.getElementById('mod-st-win').innerText = stats.winRate.toFixed(1)+'%';
-  document.getElementById('mod-st-gain').innerText = stats.gain.toFixed(1);
-  document.getElementById('mod-st-loss').innerText = stats.loss.toFixed(1);
-  document.getElementById('mod-st-rr').innerText = stats.rr.toFixed(2);
+  const modEntry = document.getElementById('mod-st-entry');
+  if (modEntry) modEntry.innerText = stats.entryRate.toFixed(1)+'%';
+  const modAcc = document.getElementById('mod-st-acc');
+  if (modAcc) modAcc.innerText = stats.accuracy.toFixed(1)+'%';
+  const modWin = document.getElementById('mod-st-win');
+  if (modWin) modWin.innerText = stats.winRate.toFixed(1)+'%';
+  const modGain = document.getElementById('mod-st-gain');
+  if (modGain) modGain.innerText = stats.gain.toFixed(1);
+  const modLoss = document.getElementById('mod-st-loss');
+  if (modLoss) modLoss.innerText = stats.loss.toFixed(1);
+  const modRr = document.getElementById('mod-st-rr');
+  if (modRr) modRr.innerText = stats.rr.toFixed(2);
+  
   const evEl = document.getElementById('mod-st-ev');
-  evEl.innerText = (stats.ev > 0 ? '+' : '') + stats.ev.toFixed(2);
-  evEl.style.color = stats.ev >= 0 ? 'var(--accent)' : 'var(--red)';
+  if (evEl) {
+    evEl.innerText = (stats.ev > 0 ? '+' : '') + stats.ev.toFixed(2);
+    evEl.style.color = stats.ev >= 0 ? 'var(--accent)' : 'var(--red)';
+  }
 }
 function openTopStatsModal() { document.getElementById('modal-top-stats').style.display = 'flex'; document.getElementById('stats-period-sel').value = 'all'; updateTopStatsUI('all'); }
 function resetStats() { if(confirm('全てのトレード記録を完全に削除しますか？\n（この操作は取り消せません）')) { localStorage.removeItem('trade_stats_mobile_v1'); updateTopStatsUI('all'); } }
@@ -1624,9 +1849,9 @@ async function executeSubmitDiscord(btn) {
 }
 
 function nextProblem() { 
-  if(appMode !== 'free' && playsDone >= maxPlays && appMode !== 'fintokei') {
-    alert("チャレンジ完了です！お疲れ様でした。");
-    clearSavedGame(); goToTop(); return;
+  if(appMode !== 'free' && appMode !== 'live' && playsDone >= maxPlays && appMode !== 'fintokei') {
+    showFinalReportModal();
+    return;
   }
   document.getElementById('modal-result').style.display='none'; 
   loadNewProblem(); 
