@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<!-- スマホ用ビューポート設定（ズーム禁止） -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TRADE SIMULATOR PRO - Mobile</title>
 
@@ -217,7 +216,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
-<!-- ★ 追加: プロップファーム設定モーダル（全画面） -->
+<!-- プロップファーム設定モーダル -->
 <div id="prop-setup-overlay" class="full-overlay" style="display:none; z-index:9500; background:var(--bg-panel);">
   <div class="top-header" style="margin-top:0;">
     <h2 style="color:var(--prop-color); font-size:18px; font-weight:900;">🏆 プロップ審査設定</h2>
@@ -305,7 +304,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:14px;" onclick="requestFullScreen()">🔲</button>
       <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
-        <option value="15m">15m</option>
+        <option value="5m">5m</option>
+        <option value="15m" selected>15m</option>
         <option value="1h">1H</option>
         <option value="4h">4H</option>
       </select>
@@ -522,6 +522,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
 <div class="center-modal" id="modal-reason">
   <div class="modal-content">
     <h3 id="rm-title" style="font-size:15px; margin-bottom:12px;">シナリオの根拠</h3>
+    
+    <!-- ★ 追加: 価格微調整エリア -->
+    <div id="rm-price-adjust" style="display:flex; gap:8px; margin-bottom:12px;">
+      <div style="flex:1;"><label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;">Entry</label><input type="number" id="rm-adj-entry" class="input-field" style="font-family:'DM Mono'; font-size:12px; padding:6px; text-align:center;" step="0.01"></div>
+      <div style="flex:1;"><label style="font-size:10px;color:var(--green);display:block;margin-bottom:2px;">TP</label><input type="number" id="rm-adj-tp" class="input-field" style="font-family:'DM Mono'; font-size:12px; padding:6px; text-align:center;" step="0.01"></div>
+      <div style="flex:1;"><label style="font-size:10px;color:var(--red);display:block;margin-bottom:2px;">SL</label><input type="number" id="rm-adj-sl" class="input-field" style="font-family:'DM Mono'; font-size:12px; padding:6px; text-align:center;" step="0.01"></div>
+    </div>
     
     <!-- Trade用 -->
     <div id="rm-reasons-trade" style="display:flex; flex-direction:column; gap:6px; text-align:left; margin-bottom:12px;">
@@ -1196,10 +1203,11 @@ function updateMA() {
 // ====== データ取得 ======
 function generateDummyData() {
   const fake = [];
+  // 5mベースになったため、300秒間隔
   let time = Math.floor(Date.now()/1000) - 86400*300; 
   let price = activeSymbol === 'BTCUSDT' ? 60000 : 2300;
   for(let i=0; i<15000; i++){
-    time += 900;
+    time += 300;
     const open = price + (Math.random()-0.5)*10;
     const high = open + Math.random()*20;
     const low = open - Math.random()*20;
@@ -1210,7 +1218,7 @@ function generateDummyData() {
   return fake;
 }
 
-// 15,000本取得
+// 25,000本(約86日分)取得 - 5m足対応でデータ量を増加
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-wrapper').style.display = 'none';
@@ -1235,8 +1243,9 @@ async function loadNewProblem() {
       fetchSymbol = 'PAXGUSDT'; 
     }
 
-    for(let i=0; i<15; i++) {
-      const res = await fetch(`${baseUrl}?symbol=${fetchSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
+    // 5分足(interval=5m)に変更し、25回ループで25,000本確保
+    for(let i=0; i<25; i++) {
+      const res = await fetch(`${baseUrl}?symbol=${fetchSymbol}&interval=5m&endTime=${endTime}&limit=1000`);
       if(!res.ok) throw new Error("APIエラー");
       const data = await res.json();
       if(data.length===0) break;
@@ -1291,8 +1300,9 @@ function applyTimeframe(centerTime = null, barCount = 100) {
 }
 
 function aggregateData(baseArr, tfStr, maxIndex) {
-  if (tfStr === '15m') return baseArr.slice(0, maxIndex + 1);
-  const sec = tfStr === '1h' ? 3600 : 14400; const res = []; let cur = null;
+  if (tfStr === '5m') return baseArr.slice(0, maxIndex + 1);
+  const sec = tfStr === '15m' ? 900 : tfStr === '1h' ? 3600 : 14400; 
+  const res = []; let cur = null;
   for(let i=0; i<=maxIndex && i<baseArr.length; i++) {
     const c = baseArr[i]; const t = Math.floor(c.time / sec) * sec;
     if(!cur || cur.time !== t) { 
@@ -1308,7 +1318,7 @@ function aggregateData(baseArr, tfStr, maxIndex) {
 function calcTimeFromLogical(logical) {
   if (logical === null || isNaN(logical) || visibleData.length === 0) return null;
   const maxIdx = visibleData.length - 1;
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
+  const sec = currentTF === '5m' ? 300 : currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
   if (logical >= maxIdx) return visibleData[maxIdx].time + (logical - maxIdx) * sec;
   if (logical <= 0) return visibleData[0].time + logical * sec;
   
@@ -1320,7 +1330,7 @@ function calcTimeFromLogical(logical) {
 function logicalFromTime(t) {
   if(!t || visibleData.length===0) return null;
   const maxIdx = visibleData.length - 1;
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
+  const sec = currentTF === '5m' ? 300 : currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
   if (t >= visibleData[maxIdx].time) return maxIdx + (t - visibleData[maxIdx].time) / sec;
   if (t <= visibleData[0].time) return (t - visibleData[0].time) / sec;
   
@@ -1705,6 +1715,15 @@ function drawPositionTool(type, entry, tp, sl, isPreview, expireTime) {
 function drawBuilderPreview() {
   if(scBuilder.priceHover==null) return;
   ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
+  
+  // ★ 価格プレビューの表示
+  ctx.fillStyle = 'rgba(22,23,25,0.9)';
+  ctx.fillRect(canvasW - 60, scBuilder.mouseY - 10, 60, 20);
+  ctx.fillStyle = '#fff';
+  ctx.font = "11px 'DM Mono', monospace";
+  ctx.textAlign = "right";
+  ctx.fillText(scBuilder.priceHover.toFixed(2), canvasW - 5, scBuilder.mouseY + 4);
+
   const hov = {price: scBuilder.priceHover, time: scBuilder.timeHover};
   if(scBuilder.step===1) drawPositionTool(scBuilder.type, scBuilder.entry, null, hov, true);
   else if(scBuilder.step===2) drawPositionTool(scBuilder.type, scBuilder.entry, hov, scBuilder.sl, true);
@@ -1742,6 +1761,15 @@ function openReasonModal(type) {
   document.getElementById('rm-reasons-skip').style.display = isSkip ? 'flex' : 'none';
   document.querySelectorAll('#modal-reason input[type="checkbox"]').forEach(cb => cb.checked = false);
   document.getElementById('rm-memo').value = '';
+
+  // ★ 価格微調整フィールドのセット
+  const adjContainer = document.getElementById('rm-price-adjust');
+  if (adjContainer) adjContainer.style.display = isSkip ? 'none' : 'flex';
+  if (!isSkip && scBuilder.entry && scBuilder.tp && scBuilder.sl) {
+    document.getElementById('rm-adj-entry').value = scBuilder.entry.price.toFixed(2);
+    document.getElementById('rm-adj-tp').value = scBuilder.tp.price.toFixed(2);
+    document.getElementById('rm-adj-sl').value = scBuilder.sl.price.toFixed(2);
+  }
 }
 function cancelScenarioBuilder() { 
   scBuilder.active=false; hideGuide(); 
@@ -1757,6 +1785,16 @@ function submitReason() {
   const memo = document.getElementById('rm-memo').value;
   if(checked.length===0 && !memo) { alert("根拠を選択・入力してください"); return; }
   
+  // ★ 手動微調整の数値を適用
+  if (!isSkip && scBuilder.entry && scBuilder.tp && scBuilder.sl) {
+    const adjEntry = parseFloat(document.getElementById('rm-adj-entry').value);
+    const adjTp = parseFloat(document.getElementById('rm-adj-tp').value);
+    const adjSl = parseFloat(document.getElementById('rm-adj-sl').value);
+    if (!isNaN(adjEntry)) scBuilder.entry.price = adjEntry;
+    if (!isNaN(adjTp)) scBuilder.tp.price = adjTp;
+    if (!isNaN(adjSl)) scBuilder.sl.price = adjSl;
+  }
+
   const reasons = Array.from(checked).map(c=>c.value).join('/');
   const finalReason = reasons + (memo ? ` - ${memo}` : '');
   
@@ -1913,7 +1951,8 @@ function resumeSimulation() {
 function stepCandleEngine() {
   if (currentIndex >= fullBaseData.length - 1) return false;
   currentIndex++; const baseC = fullBaseData[currentIndex];
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400; const t = Math.floor(baseC.time / sec) * sec;
+  const sec = currentTF === '5m' ? 300 : currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
+  const t = Math.floor(baseC.time / sec) * sec;
   let last = visibleData[visibleData.length - 1];
   
   if (last.time === t) { 
