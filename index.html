@@ -307,7 +307,8 @@ document.addEventListener('lwc-ready', _onLwcReady);
       <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:14px;" onclick="requestFullScreen()">🔲</button>
       <button class="btn" style="padding:4px 6px; width:auto; border:none; background:transparent; font-size:18px;" onclick="goToTop()">🏠</button>
       <select class="tf-select" id="tf-sel" onchange="changeTimeframe()">
-        <option value="15m">15m</option>
+        <option value="5m">5m</option>
+        <option value="15m" selected>15m</option>
         <option value="1h">1H</option>
         <option value="4h">4H</option>
       </select>
@@ -610,7 +611,7 @@ let currentSalonUserName = "";
 
 let chart, candleSeries;
 let fullBaseData = [], visibleData = [];
-let currentTF = '15m';
+let currentTF = '15m'; // 初期表示は15m
 let currentIndex = 0, initialIndex = 0;
 let isSimulating = false, simTimeout = null;
 let activeSymbol = 'BTCUSDT';
@@ -972,8 +973,8 @@ function generateDummyData() {
   const fake = [];
   let time = Math.floor(Date.now()/1000) - 86400*300; 
   let price = activeSymbol === 'BTCUSDT' ? 60000 : 2300;
-  for(let i=0; i<15000; i++){
-    time += 900;
+  for(let i=0; i<20000; i++){
+    time += 300; // 5分
     const open = price + (Math.random()-0.5)*10;
     const high = open + Math.random()*20;
     const low = open - Math.random()*20;
@@ -984,7 +985,7 @@ function generateDummyData() {
   return fake;
 }
 
-// 15,000本取得
+// ★ ベースを5分足にし、20回（約20,000本）取得するように拡張
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-wrapper').style.display = 'none';
@@ -1010,8 +1011,8 @@ async function loadNewProblem() {
       fetchSymbol = 'PAXGUSDT'; 
     }
 
-    for(let i=0; i<15; i++) {
-      const res = await fetch(`${baseUrl}?symbol=${fetchSymbol}&interval=15m&endTime=${endTime}&limit=1000`);
+    for(let i=0; i<20; i++) { // 20回取得で約2ヶ月分の5分足
+      const res = await fetch(`${baseUrl}?symbol=${fetchSymbol}&interval=5m&endTime=${endTime}&limit=1000`);
       if(!res.ok) throw new Error("APIエラー");
       const data = await res.json();
       if(data.length===0) break;
@@ -1027,8 +1028,22 @@ async function loadNewProblem() {
   
   currentIndex = Math.max(0, fullBaseData.length - 200); 
   initialIndex = currentIndex;
+  
+  // セレクトボックスを初期値15mにセット
+  document.getElementById('tf-sel').value = '15m';
+  currentTF = '15m';
+
   applyTimeframe(null, 100);
   document.getElementById('bars-left-val').innerText = (fullBaseData.length - 1 - currentIndex);
+}
+
+// タイムフレームの秒数を取得
+function getTfSeconds(tfStr) {
+  if (tfStr === '5m') return 300;
+  if (tfStr === '15m') return 900;
+  if (tfStr === '1h') return 3600;
+  if (tfStr === '4h') return 14400;
+  return 900;
 }
 
 function changeTimeframe() { 
@@ -1066,8 +1081,9 @@ function applyTimeframe(centerTime = null, barCount = 100) {
 }
 
 function aggregateData(baseArr, tfStr, maxIndex) {
-  if (tfStr === '15m') return baseArr.slice(0, maxIndex + 1);
-  const sec = tfStr === '1h' ? 3600 : 14400; const res = []; let cur = null;
+  if (tfStr === '5m') return baseArr.slice(0, maxIndex + 1);
+  const sec = getTfSeconds(tfStr);
+  const res = []; let cur = null;
   for(let i=0; i<=maxIndex && i<baseArr.length; i++) {
     const c = baseArr[i]; const t = Math.floor(c.time / sec) * sec;
     if(!cur || cur.time !== t) { 
@@ -1083,7 +1099,7 @@ function aggregateData(baseArr, tfStr, maxIndex) {
 function calcTimeFromLogical(logical) {
   if (logical === null || isNaN(logical) || visibleData.length === 0) return null;
   const maxIdx = visibleData.length - 1;
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
+  const sec = getTfSeconds(currentTF);
   if (logical >= maxIdx) return visibleData[maxIdx].time + (logical - maxIdx) * sec;
   if (logical <= 0) return visibleData[0].time + logical * sec;
   
@@ -1095,7 +1111,7 @@ function calcTimeFromLogical(logical) {
 function logicalFromTime(t) {
   if(!t || visibleData.length===0) return null;
   const maxIdx = visibleData.length - 1;
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400;
+  const sec = getTfSeconds(currentTF);
   if (t >= visibleData[maxIdx].time) return maxIdx + (t - visibleData[maxIdx].time) / sec;
   if (t <= visibleData[0].time) return (t - visibleData[0].time) / sec;
   
@@ -1110,7 +1126,7 @@ function logicalFromTime(t) {
   return r + (t - t1) / (t2 - t1);
 }
 
-// 堅牢な座標変換（時間足を変えてもズレない）
+// 堅牢な座標変換
 function safeLogicalToCoordinate(logical) {
   if (logical === null || isNaN(logical)) return null; 
   const ts = chart.timeScale(); 
@@ -1761,7 +1777,8 @@ function resumeSimulation() {
 function stepCandleEngine() {
   if (currentIndex >= fullBaseData.length - 1) return false;
   currentIndex++; const baseC = fullBaseData[currentIndex];
-  const sec = currentTF === '15m' ? 900 : currentTF === '1h' ? 3600 : 14400; const t = Math.floor(baseC.time / sec) * sec;
+  const sec = getTfSeconds(currentTF); 
+  const t = Math.floor(baseC.time / sec) * sec;
   let last = visibleData[visibleData.length - 1];
   
   if (last.time === t) { 
