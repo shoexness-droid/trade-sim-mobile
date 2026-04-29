@@ -76,6 +76,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   #guide-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 11px; z-index: 20; display: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; }
   
   #action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 16px; display: none; flex-direction: column; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); backdrop-filter: blur(4px); width: 90%; max-width: 320px; }
+  #scenario-action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(22,23,25,0.95); border: 1px solid var(--accent); padding: 6px 14px; border-radius: 30px; display: none; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: nowrap; }
   #fab-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; display: none; flex-direction: column; align-items: center; gap: 8px; }
   #fab-speed-ctrl { background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
   #fab-controls { background: rgba(22,23,25,0.95); border: 1px solid var(--border); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: nowrap; }
@@ -143,7 +144,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
     .palette { padding: 4px; }
     .bottom-sheet { padding: 10px; max-height: 100dvh; border-radius: 0; gap: 8px; }
     .sheet-header { margin-bottom: 2px; }
-    #fab-wrapper { bottom: 5px; flex-direction: row; gap: 12px; }
+    #fab-wrapper, #scenario-action-panel { bottom: 5px; flex-direction: row; gap: 12px; }
     #fab-controls { padding: 4px 16px; gap: 12px; }
     .fab-btn { font-size: 16px; }
     .info-bar { flex-direction: row; gap: 12px; }
@@ -217,7 +218,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
-<!-- ★ 追加: プロップファーム設定モーダル（全画面） -->
+<!-- プロップファーム設定モーダル（全画面） -->
 <div id="prop-setup-overlay" class="full-overlay" style="display:none; z-index:9500; background:var(--bg-panel);">
   <div class="top-header" style="margin-top:0;">
     <h2 style="color:var(--prop-color); font-size:18px; font-weight:900;">🏆 プロップ審査設定</h2>
@@ -295,6 +296,7 @@ document.addEventListener('lwc-ready', _onLwcReady);
   </div>
 </div>
 
+<!-- 3. メインアプリ画面（チャート＆操作） -->
 <div id="app-screen">
   <header>
     <div class="header-left">
@@ -330,6 +332,13 @@ document.addEventListener('lwc-ready', _onLwcReady);
         <button class="btn btn-primary" style="background:var(--green); color:#fff; padding:10px; font-size:12px;" onclick="paExecuteEntry()">✅ エントリー</button>
         <button class="btn btn-primary" style="background:var(--red); color:#fff; padding:10px; font-size:12px;" id="btn-pa-skip" onclick="paSkipEntry()">❌ 見送る</button>
       </div>
+    </div>
+
+    <!-- シナリオ作成中のキャンセル・戻るコントロール -->
+    <div id="scenario-action-panel">
+      <button class="fab-btn" onclick="stepBackScenario()" style="font-size:14px; color:var(--text);">↩️ 1つ戻る</button>
+      <div style="width:1px; height:20px; background:var(--border);"></div>
+      <button class="fab-btn" onclick="cancelScenarioBuilder()" style="font-size:14px; color:var(--red);">❌ キャンセル</button>
     </div>
 
     <!-- 再生コントローラー＆スピード調整 -->
@@ -855,241 +864,6 @@ function startGame(mode) {
   loadNewProblem();
 }
 
-// ====== プロップファーム設定 ======
-function loadPropPresets() {
-  const saved = localStorage.getItem(PROP_SAVE_KEY);
-  return saved ? JSON.parse(saved) : [{}, {}, {}];
-}
-function savePropPresets(presets) {
-  localStorage.setItem(PROP_SAVE_KEY, JSON.stringify(presets));
-}
-function propCurLabel() { return propCurrency === 'JPY' ? '(¥)' : '($)'; }
-function setPropCurrency(cur) {
-  propCurrency = cur;
-  const isJPY = cur === 'JPY';
-  document.getElementById('prop-usdjpy-group').style.display = isJPY ? 'flex' : 'none';
-  document.getElementById('prop-balance-lbl').innerText = `初期資金 ${propCurLabel()}`;
-  document.getElementById('prop-pip-cur-lbl').innerText = propCurLabel();
-  calcPropPipVal();
-}
-function togglePipManual() {
-  const isManual = document.getElementById('prop-pip-manual').checked;
-  document.getElementById('prop-pip-val').readOnly = !isManual;
-  document.getElementById('prop-pip-val').style.background = isManual ? 'var(--bg-panel)' : 'var(--bg-hover)';
-  if (!isManual) calcPropPipVal();
-}
-function calcPropPipVal() {
-  const isManual = document.getElementById('prop-pip-manual') && document.getElementById('prop-pip-manual').checked;
-  if (isManual) return;
-  activeSymbol = document.getElementById('top-symbol-sel').value;
-  const lot = parseFloat(document.getElementById('prop-lot').value) || 0.01;
-  const usdJpy = parseFloat(document.getElementById('prop-usdjpy').value) || 150;
-  const isJPY = propCurrency === 'JPY';
-  const isXAU = activeSymbol === 'PAXGUSDT' || activeSymbol === 'XAUUSDT';
-  const ozPerLot = isXAU ? 100 : 1;
-  let pipValUSD = lot * ozPerLot;
-  let pipVal = isJPY ? pipValUSD * usdJpy : pipValUSD;
-  document.getElementById('prop-pip-val').value = pipVal.toFixed(isJPY ? 1 : 4);
-  updatePropRulesPreview();
-}
-function getPropFormValues() {
-  return {
-    name: document.getElementById('prop-name').value || 'プリセット' + (currentPropPreset+1),
-    currency: propCurrency,
-    balance: parseFloat(document.getElementById('prop-balance').value) || 15000000,
-    lot: parseFloat(document.getElementById('prop-lot').value) || 0.01,
-    usdJpy: parseFloat(document.getElementById('prop-usdjpy').value) || 150,
-    pipVal: parseFloat(document.getElementById('prop-pip-val').value) || 1,
-    target: parseFloat(document.getElementById('prop-target').value) || 8,
-    dailyLoss: parseFloat(document.getElementById('prop-daily-loss').value) || 5,
-    maxLoss: parseFloat(document.getElementById('prop-max-loss').value) || 10,
-    maxTrades: parseInt(document.getElementById('prop-max-trades').value) || 30,
-    minTrades: parseInt(document.getElementById('prop-min-trades').value) || 5,
-    riskPct: parseFloat(document.getElementById('prop-risk-pct').value) || 1,
-  };
-}
-function setPropFormValues(preset) {
-  if (!preset || Object.keys(preset).length === 0) {
-    document.getElementById('prop-name').value = '1500万 チャレンジ';
-    setPropCurrency('JPY');
-    document.getElementById('prop-currency').value = 'JPY';
-    document.getElementById('prop-balance').value = 15000000;
-    document.getElementById('prop-lot').value = 0.01;
-    document.getElementById('prop-usdjpy').value = 150;
-    document.getElementById('prop-pip-val').value = 1;
-    document.getElementById('prop-target').value = 8;
-    document.getElementById('prop-daily-loss').value = 5;
-    document.getElementById('prop-max-loss').value = 10;
-    document.getElementById('prop-max-trades').value = 30;
-    document.getElementById('prop-min-trades').value = 5;
-    document.getElementById('prop-risk-pct').value = 1;
-    updatePropRulesPreview();
-    return;
-  }
-  document.getElementById('prop-name').value = preset.name || '';
-  if (preset.currency) { propCurrency = preset.currency; document.getElementById('prop-currency').value = preset.currency; setPropCurrency(preset.currency); } 
-  else { setPropCurrency('JPY'); document.getElementById('prop-currency').value = 'JPY'; }
-  document.getElementById('prop-balance').value = preset.balance || 15000000;
-  document.getElementById('prop-lot').value = preset.lot || 0.01;
-  document.getElementById('prop-usdjpy').value = preset.usdJpy || 150;
-  document.getElementById('prop-pip-val').value = preset.pipVal || 1;
-  document.getElementById('prop-target').value = preset.target || 8;
-  document.getElementById('prop-daily-loss').value = preset.dailyLoss || 5;
-  document.getElementById('prop-max-loss').value = preset.maxLoss || 10;
-  document.getElementById('prop-max-trades').value = preset.maxTrades || 30;
-  document.getElementById('prop-risk-pct').value = preset.riskPct || 1;
-  updatePropRulesPreview();
-}
-function updatePropRulesPreview() {
-  const v = getPropFormValues();
-  const cs = propCurrency === 'JPY' ? '¥' : '$';
-  const fmt = (n) => propCurrency === 'JPY' ? cs + Math.round(n).toLocaleString() : cs + n.toFixed(0);
-  const targetAmt = v.balance * v.target / 100;
-  const dailyAmt  = v.balance * v.dailyLoss / 100;
-  const maxAmt    = v.balance * v.maxLoss / 100;
-  const riskAmt   = v.balance * v.riskPct / 100;
-  const riskPipsEst = v.pipVal > 0 ? (riskAmt / v.pipVal).toFixed(1) : '—';
-  document.getElementById('prop-rules-preview').innerHTML = `
-    <span style="color:var(--green)">✅ 合格条件</span><br>
-    　• 利益 <b>${fmt(targetAmt)}（${v.target}%）</b><br>
-    <span style="color:var(--red)">❌ 失格条件</span><br>
-    　• 1トレード損失 <b>${fmt(dailyAmt)}（${v.dailyLoss}%）</b><br>
-    　• 累計損失 <b>${fmt(maxAmt)}（${v.maxLoss}%）</b><br>
-    <span style="color:#c084fc">🎯 ロット自動調整</span><br>
-    　• 常に <b>${fmt(riskAmt)}（${v.riskPct}%）</b>のリスク<br>
-    　• SL幅 ${riskPipsEst}pips 相当
-  `;
-}
-function switchPropPreset(idx) {
-  currentPropPreset = idx;
-  document.querySelectorAll('.prop-preset-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
-  const presets = loadPropPresets();
-  setPropFormValues(presets[idx] || {});
-}
-function savePropPreset() {
-  const presets = loadPropPresets();
-  presets[currentPropPreset] = getPropFormValues();
-  savePropPresets(presets);
-  const tab = document.getElementById('ptab-' + currentPropPreset);
-  tab.innerText = presets[currentPropPreset].name.slice(0, 8) || 'プリセット'+(currentPropPreset+1);
-  alert('プリセットを保存しました！');
-}
-function openPropSetup() {
-  const presets = loadPropPresets();
-  [0,1,2].forEach(i => {
-    const tab = document.getElementById('ptab-' + i);
-    if (presets[i] && presets[i].name) tab.innerText = presets[i].name.slice(0, 8);
-    else tab.innerText = 'プリセット' + (i+1);
-  });
-  switchPropPreset(0);
-  calcPropPipVal();
-  document.getElementById('prop-setup-overlay').style.display = 'flex';
-}
-function closePropSetup() {
-  document.getElementById('prop-setup-overlay').style.display = 'none';
-}
-function startPropChallenge() {
-  const v = getPropFormValues();
-  if (!v.name) { alert('プリセット名を入力してください。'); return; }
-  closePropSetup();
-  activeSymbol = document.getElementById('top-symbol-sel').value;
-  propState = {
-    ...v,
-    currentBalance: v.balance,
-    totalPips: 0, lastTradePips: 0, tradesDone: 0, peakBalance: v.balance, maxDD: 0,
-    isFailed: false, isPassed: false, failReason: '',
-    curSymbol: v.currency === 'JPY' ? '¥' : '$',
-    isJPY: v.currency === 'JPY',
-  };
-  appMode = 'fintokei';
-  maxPlays = v.maxTrades;
-  playsDone = 0;
-  
-  const displaySym = document.getElementById('top-symbol-sel').options[document.getElementById('top-symbol-sel').selectedIndex].text;
-  document.getElementById('mode-badge').innerHTML = `<span style="color:var(--prop-color)">FINTOKEI</span>`;
-  document.getElementById('active-symbol-badge').innerText = displaySym.split(' ')[0]; 
-  document.getElementById('top-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'flex';
-  
-  if(!chart) initChartSystem(); 
-  else {
-    const w = document.getElementById('chart-container').clientWidth;
-    const h = document.getElementById('chart-container').clientHeight;
-    chart.applyOptions({ width: w, height: h }); resizeCanvas(w, h);
-  }
-  resetFabControls();
-  loadNewProblem();
-}
-
-function updatePropStatsPanel() {
-  if (!propState) return;
-  const cs = propState.curSymbol || '$';
-  const fmt = (n) => propState.isJPY ? cs + Math.round(n).toLocaleString() : cs + Math.abs(n).toFixed(2);
-  const pnl = propState.currentBalance - propState.balance;
-  const targetAmount = propState.balance * propState.target / 100;
-  const dailyLossLimit = propState.balance * propState.dailyLoss / 100;
-  const totalLossLimit = propState.balance * propState.maxLoss / 100;
-  const totalLossAmt = Math.max(0, propState.balance - propState.currentBalance);
-  const lastTradeLoss = (propState.lastTradePips < 0 && propState.lastTradeRiskAmt)
-    ? propState.lastTradeRiskAmt
-    : (propState.lastTradePips < 0 ? Math.abs(propState.lastTradePips * propState.pipVal) : 0);
-
-  const targetPct = Math.min(100, Math.max(0, (pnl / targetAmount) * 100));
-  const ddPct = Math.min(100, Math.max(0, (totalLossAmt / totalLossLimit) * 100));
-  const dailyPct = Math.min(100, Math.max(0, (lastTradeLoss / dailyLossLimit) * 100));
-
-  const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-  let statusClass, statusText;
-  if (ddPct > 70 || dailyPct > 70) { statusClass = 'fail'; statusText = '⚠️ 危険ゾーン！'; } 
-  else if (pnl >= targetAmount * 0.6) { statusClass = 'ok'; statusText = '✅ 目標ペース良好！'; } 
-  else { statusClass = 'warn'; statusText = '📈 目標に向けて進行中'; }
-
-  const pBar = (pct, color) => `<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:3px 0 7px;"><div style="height:100%;width:${pct}%;background:${color};border-radius:3px;"></div></div>`;
-
-  document.getElementById('stats-prop-body').innerHTML = `
-    <div style="font-size:10px;color:var(--prop-color);font-weight:700;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;">🏆 ${propState.name}</div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span style="color:var(--text-muted)">残高</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:${pnlColor}">${cs}${propState.isJPY ? Math.round(propState.currentBalance).toLocaleString() : propState.currentBalance.toFixed(2)}</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span style="color:var(--text-muted)">損益</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:${pnlColor}">${pnl>=0?'+':''}${propState.isJPY ? cs+Math.round(pnl).toLocaleString() : cs+pnl.toFixed(2)} (${pnl>=0?'+':''}${(pnl/propState.balance*100).toFixed(2)}%)</span></div>
-    <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">目標達成 ${targetPct.toFixed(0)}% → ${propState.isJPY ? cs+Math.round(targetAmount).toLocaleString() : cs+targetAmount.toFixed(0)}</div>
-    ${pBar(targetPct, 'var(--green)')}
-    <div style="font-size:10px;color:var(--text-muted);">ドローダウン ${ddPct.toFixed(0)}% / 上限 ${propState.isJPY ? cs+Math.round(totalLossLimit).toLocaleString() : cs+totalLossLimit.toFixed(0)}</div>
-    ${pBar(ddPct, ddPct > 70 ? 'var(--red)' : ddPct > 40 ? '#fbbf24' : '#60a5fa')}
-    <div style="font-size:10px;color:var(--text-muted);">直近損失 / 日次制限 ${propState.isJPY ? cs+Math.round(dailyLossLimit).toLocaleString() : cs+dailyLossLimit.toFixed(0)}</div>
-    ${pBar(dailyPct, dailyPct > 70 ? 'var(--red)' : '#fbbf24')}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px;">
-      <div style="background:var(--bg-input);border-radius:5px;padding:6px;text-align:center;"><div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">${propState.tradesDone}</div><div style="font-size:9px;color:var(--text-muted);">取引回数</div></div>
-      <div style="background:var(--bg-input);border-radius:5px;padding:6px;text-align:center;"><div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">${maxPlays - propState.tradesDone}</div><div style="font-size:9px;color:var(--text-muted);">残り回数</div></div>
-    </div>
-  `;
-}
-
-function showPropFinal(passed) {
-  document.getElementById('modal-result').style.display = 'none';
-  const m = document.getElementById('modal-final-report');
-  const cs = propState.curSymbol || '$';
-  const isJPY = propState.isJPY;
-  const fmtAmt = (n) => isJPY ? cs + Math.round(n).toLocaleString() : cs + Math.abs(n).toFixed(2);
-  const pnl = propState.currentBalance - propState.balance;
-  const pnlPct = (pnl / propState.balance * 100).toFixed(2);
-
-  document.getElementById('final-stat-grid').innerHTML = `
-    <div style="grid-column:span 2; font-size:18px; font-weight:bold; color:${passed?'var(--green)':'var(--red)'}; margin-bottom:10px;">
-      ${passed ? '🎉 CHALLENGE PASSED!' : '💥 FAILED'}
-    </div>
-    <div class="stat-box" style="grid-column:span 2; padding:12px; font-size:12px; color:var(--text); text-align:left;">
-      ${passed ? 'おめでとうございます！プロップ審査をクリアしました。' : '失格となりました。<br><b style="color:var(--red)">' + propState.failReason + '</b>'}
-    </div>
-    <div class="stat-box"><div class="stat-val" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${fmtAmt(propState.currentBalance)}</div><div class="stat-lbl">最終残高</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtAmt(pnl)}</div><div class="stat-lbl">純損益 (${pnl>=0?'+':''}${pnlPct}%)</div></div>
-    <div class="stat-box"><div class="stat-val">+${fmtAmt(propState.balance*propState.target/100)}</div><div class="stat-lbl">目標額 (${propState.target}%)</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:var(--red)">${fmtAmt(propState.maxDD)}</div><div class="stat-lbl">最大DD</div></div>
-    <div class="stat-box" style="grid-column:span 2;"><div class="stat-val">${propState.tradesDone} 回</div><div class="stat-lbl">取引回数</div></div>
-  `;
-  
-  if (currentSalonUserName) { document.getElementById('final-submit-username').value = currentSalonUserName + " さん"; }
-  m.style.display = 'flex';
-}
-
 let currentActiveSheet = null;
 function toggleSheet(sheetId, btnElement) {
   const sheet = document.getElementById(sheetId);
@@ -1214,6 +988,7 @@ function generateDummyData() {
 async function loadNewProblem() {
   clearTimeout(simTimeout); isSimulating = false; isPaMode = false;
   document.getElementById('fab-wrapper').style.display = 'none';
+  document.getElementById('scenario-action-panel').style.display = 'none';
   document.getElementById('action-panel').style.display = 'none';
   document.getElementById('modal-result').style.display = 'none';
   resetFabControls();
@@ -1589,7 +1364,7 @@ function setupTools() {
     btn.onclick = () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active'); currentTool = btn.dataset.tool;
-      if(scBuilder.active) { scBuilder.active = false; hideGuide(); }
+      if(scBuilder.active) { scBuilder.active = false; hideGuide(); document.getElementById('scenario-action-panel').style.display='none'; }
       closeAllSheets();
     };
   });
@@ -1704,7 +1479,47 @@ function drawPositionTool(type, entry, tp, sl, isPreview, expireTime) {
 
 function drawBuilderPreview() {
   if(scBuilder.priceHover==null) return;
-  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([4,4]); ctx.beginPath(); 
+  ctx.moveTo(0,scBuilder.mouseY); ctx.lineTo(canvasW,scBuilder.mouseY); 
+  ctx.moveTo(scBuilder.mouseX,0); ctx.lineTo(scBuilder.mouseX,canvasH);
+  ctx.stroke(); ctx.setLineDash([]);
+  
+  if(scBuilder.timeHover) {
+    const d = new Date(scBuilder.timeHover * 1000);
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const da = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const timeStr = `${mo}/${da} ${h}:${m}`;
+    const priceStr = scBuilder.priceHover.toFixed(2);
+
+    // 画面外にはみ出さないように位置を調整
+    let boxX = scBuilder.mouseX + 15;
+    if (boxX + 90 > canvasW) boxX = scBuilder.mouseX - 105;
+    let boxY = scBuilder.mouseY - 45;
+    if (boxY < 0) boxY = scBuilder.mouseY + 15;
+
+    ctx.fillStyle = 'rgba(22,23,25,0.9)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(boxX, boxY, 90, 36, 6);
+    } else {
+      ctx.rect(boxX, boxY, 90, 36);
+    }
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = "bold 12px 'DM Mono', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${priceStr}`, boxX + 8, boxY + 16);
+    ctx.fillStyle = '#a3a3a3';
+    ctx.font = "10px 'DM Mono', sans-serif";
+    ctx.fillText(`${timeStr}`, boxX + 8, boxY + 30);
+  }
+
   const hov = {price: scBuilder.priceHover, time: scBuilder.timeHover};
   if(scBuilder.step===1) drawPositionTool(scBuilder.type, scBuilder.entry, null, hov, true);
   else if(scBuilder.step===2) drawPositionTool(scBuilder.type, scBuilder.entry, hov, scBuilder.sl, true);
@@ -1716,12 +1531,31 @@ function hideGuide() { document.getElementById('guide-toast').style.display='non
 // ====== シナリオ構築 ======
 function startScenarioBuilder(type) {
   closeAllSheets(); 
-  scBuilder = { active: true, type: type, step: 0 };
+  scBuilder = { active: true, type: type, step: 0, entry: null, tp: null, sl: null, mouseX: 0, mouseY: 0 };
   if(type === 'skip') { openReasonModal('skip'); } 
   else { 
     showGuide("👆 1. エントリー価格をタップ"); 
+    document.getElementById('fab-wrapper').style.display = 'none';
+    document.getElementById('scenario-action-panel').style.display = 'flex';
   }
 }
+
+function stepBackScenario() {
+  if (!scBuilder.active) return;
+  if (scBuilder.step === 0) {
+    cancelScenarioBuilder();
+  } else if (scBuilder.step === 1) {
+    scBuilder.step = 0;
+    scBuilder.entry = null;
+    showGuide("👆 1. エントリー価格をタップ");
+  } else if (scBuilder.step === 2) {
+    scBuilder.step = 1;
+    scBuilder.sl = null;
+    showGuide("👆 2. 損切(SL)をタップ");
+  }
+  syncCanvas();
+}
+
 function handleScenarioClick(coord) {
   if(scBuilder.step === 0) { scBuilder.entry = {time:coord.time, price:coord.price}; scBuilder.step=1; showGuide("👆 2. 損切(SL)をタップ"); }
   else if(scBuilder.step === 1) { scBuilder.sl = {time:coord.time, price:coord.price}; scBuilder.step=2; showGuide("👆 3. 利確(TP)と右幅(期限)をタップ"); }
@@ -1734,7 +1568,9 @@ function handleScenarioClick(coord) {
   }
 }
 function openReasonModal(type) {
-  hideGuide(); document.getElementById('modal-reason').style.display = 'flex';
+  hideGuide(); 
+  document.getElementById('scenario-action-panel').style.display = 'none';
+  document.getElementById('modal-reason').style.display = 'flex';
   const isSkip = type === 'skip';
   document.getElementById('rm-title').innerText = isSkip ? '見送りの根拠' : `${type.toUpperCase()}の根拠`;
   
@@ -1745,7 +1581,12 @@ function openReasonModal(type) {
 }
 function cancelScenarioBuilder() { 
   scBuilder.active=false; hideGuide(); 
+  document.getElementById('scenario-action-panel').style.display = 'none';
+  if(isSimulating && !isPaMode) {
+    document.getElementById('fab-wrapper').style.display = 'flex';
+  }
   document.querySelector('.tool-btn[data-tool="cursor"]').click(); 
+  syncCanvas();
 }
 
 function updateScMode(id, mode) { const sc = scenarios.find(s => s.id === id); if (sc) sc.mode = mode; }
@@ -2165,9 +2006,10 @@ async function executeSubmitDiscordFinal(btn) {
 
 function reviewChart() {
   document.getElementById('modal-result').style.display = 'none';
-  const fab = document.getElementById('fab-controls');
-  fab.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
-  fab.style.display = 'flex';
+  const fabControls = document.getElementById('fab-controls');
+  fabControls.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:10px 24px; border-radius:24px; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:16px;" onclick="nextProblem()">⏭ 次のチャートへ進む</button>`;
+  document.getElementById('fab-wrapper').style.display = 'flex';
+  document.getElementById('fab-speed-ctrl').style.display = 'none';
   document.querySelector('.tool-btn[data-tool="cursor"]').click();
 }
 
